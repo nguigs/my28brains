@@ -250,9 +250,13 @@ def plotGeodesic(
         mesh = ls[0]
         for i in range(1, len(ls)):
             mesh += ls[i]
-        V, F, Color = getDataFromMesh(mesh)
+        V, F, color = getDataFromMesh(mesh)
         if mesh.has_vertex_colors():
-            save_data(file_name, "ply", V, F, color=Color)
+            print(f"color: {color}")
+            print(f"color shape: {color.shape}")
+            print(f"faces shape: {F.shape}")
+            print(f"vertices shape: {V.shape}")
+            save_data(file_name, "ply", V, F, color=color)
         else:
             save_data(file_name, "ply", V, F)
 

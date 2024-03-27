@@ -6,6 +6,7 @@ import os
 
 import geomstats.backend as gs
 import numpy as np
+import open3d as o3d
 import pandas as pd
 import torch
 import trimesh
@@ -284,18 +285,18 @@ def load_real_data(config):
     project_config = pc.import_default_config(project_dir)
 
     # load template day vertex colors
-    template_day_index = project_config.template_day_index
-    template_day = template_day_index + 1
-    meshed_dir = project_config.meshed_dir
-    colors_path = os.path.join(
-        meshed_dir,
-        f"{project_config.hemispheres[0]}_structure_{project_config.structure_ids[0]}_day{template_day:02}_colors.npy",
-    )
-    vertex_colors = np.load(colors_path)
+    # template_day_index = project_config.template_day_index
+    # template_day = template_day_index + 1
+    # meshed_dir = project_config.meshed_dir
+    # colors_path = os.path.join(
+    #     meshed_dir,
+    #     f"{project_config.hemispheres[0]}_structure_{project_config.structure_ids[0]}_day{template_day:02}_colors.npy",
+    # )
+    # vertex_colors = np.load(colors_path)
 
-    # take off the opacity value, so that it is only RGB
-    vertex_colors = vertex_colors[:, 0:3]
-    print(vertex_colors)
+    # # take off the opacity value, so that it is only RGB
+    # vertex_colors = vertex_colors[:, 0:3]
+    # print(vertex_colors)
 
     # load meshes
     mesh_sequence_vertices = []
@@ -331,6 +332,7 @@ def load_real_data(config):
     else:
         print("Using menstrual mesh data (from reparameterized directory)")
         mesh_dir = project_config.reparameterized_dir
+        # mesh_dir = project_config.nondegenerate_dir
 
         # make sure there are meshes in the directory
         mesh_string_base = os.path.join(
@@ -339,7 +341,7 @@ def load_real_data(config):
         )
         mesh_paths = sorted(glob.glob(mesh_string_base))
         print(
-            f"\ne. (Sort) Found {len(mesh_paths)} .plys for ({config.hemispheres[0]}, {config.structure_ids[0]}) in {mesh_dir}"
+            f"\nFound {len(mesh_paths)} .plys for ({config.hemispheres[0]}, {config.structure_ids[0]}) in {mesh_dir}"
         )
 
         # load meshes
@@ -360,11 +362,8 @@ def load_real_data(config):
                 days_to_ignore.append(day)
                 continue
 
-            vertices, faces, _ = h2_io.loadData(mesh_path)
-            # mesh = o3d.io.read_triangle_mesh(file_name)
-            # vertices = gs.array(mesh.vertices)
-            # faces = gs.array(mesh.faces)
-            # vertex_colors = gs.array(mesh.vertex_colors)
+            vertices, faces, vertex_colors = h2_io.loadData(mesh_path)
+            print(f"faces.shape: {faces.shape}")
             if vertices.shape[0] == 0:
                 print(f"Day {day} has no data. Skipping.")
                 print(f"DayID not to use: {day}")

@@ -273,15 +273,23 @@ def reparameterize_with_geodesic(
         start_path=start_path, end_path=end_path, gpu_id=gpu_id, project_dir=project_dir
     )
 
-    h2_io.plotGeodesic(  # if this does not work, then might have to make a specific color thing in utils.makeGeodMeshes instead of using Rho
-        [geod[-1]],
-        F0,
-        color0,
-        stepsize=project_config.stepsize[
-            "menstrual_mesh"
-        ],  # open3d plotting parameter - unused
-        file_name=os.path.splitext(ply_path)[0],  # remove .ply extension
-        axis=[0, 1, 0],
-        angle=-1 * np.pi / 2,
-    )
     print(f"- Write mesh to {ply_path}.")
+
+    reparameterized_mesh = trimesh.Trimesh(
+        vertices=geod[-1], faces=F0, vertex_colors=color0
+    )
+    write.trimesh_to_ply(reparameterized_mesh, ply_path)
+
+    # save the last point in the geodesic as the reparameterized mesh
+
+    # h2_io.plotGeodesic(
+    #     [geod[-1]],
+    #     F0,
+    #     color=color0,
+    #     stepsize=project_config.stepsize[
+    #         "menstrual_mesh"
+    #     ],  # open3d plotting parameter - unused
+    #     file_name=os.path.splitext(ply_path)[0],  # remove .ply extension
+    #     axis=[0, 1, 0],
+    #     angle=-1 * np.pi / 2,
+    # )
