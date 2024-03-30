@@ -80,13 +80,13 @@ stepsize = {
 run_type = "base"  # can either be "base" for base result or "exp" for testing.
 
 # Brain hemispheres and anatomical structures
-hemisphere = "left"  # , "right"]
-structure_id = -1
+hemispheres = ["left"]  # , "right"]
+structure_ids = [-1]
 
 # Face area threshold for non-degenerate meshes:
 # the less we decimate, the more likely it is to have small faces
 # thus the thresholt needs to be higher
-area_threshold = 0.00  # [0.00] 0.0001, 0.001, 0.01, 0.1, 1.0]
+area_thresholds = [0.00]  # [0.00] 0.0001, 0.001, 0.01, 0.1, 1.0]
 
 # Define template structure of the mesh that will be used
 # for all mesh in the interpolation

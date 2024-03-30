@@ -92,7 +92,8 @@ X_multiple = gs.vstack(
     multiple_intercept_hat,
     multiple_coef_hat,
     mr,
-) = training.fit_linear_regression(y, X_multiple)
+    p_values,
+) = training.fit_linear_regression(y, X_multiple, return_p=True)
 
 mr_score_array = training.compute_R2(y, X_multiple, test_indices, train_indices)
 
@@ -110,6 +111,16 @@ hormones_info = {
 }
 
 app = Dash(__name__)  # , external_stylesheets=external_stylesheets)
+
+app.layout = html.Div(
+    [
+        html.H1(
+            children="Hello world!",
+            className="hello",
+            style={"color": "#00361c", "text-align": "center"},
+        )
+    ]
+)
 
 
 app.layout = html.Div(
@@ -239,7 +250,6 @@ def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
                 y=y,
                 z=z,
                 colorbar_title="z",
-                # colorscale=[[0, "gold"], [0.5, "mediumturquoise"], [1, "magenta"]],
                 vertexcolor=vertex_colors,
                 # i, j and k give the vertices of triangles
                 i=i,
@@ -254,22 +264,10 @@ def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
     fig.update_layout(width=1000)
     fig.update_layout(height=1000)
 
-    fig.update_layout(
-        scene=dict(
-            xaxis=dict(
-                nticks=4,
-                range=[-2.5, 2],
-            ),
-            yaxis=dict(
-                nticks=4,
-                range=[-2.5, 2],
-            ),
-            zaxis=dict(
-                nticks=4,
-                range=[-2.5, 2],
-            ),
-        ),
-    )
+    # rescale the axes to fit the shape
+    for axis in ["x", "y", "z"]:
+        fig.update_layout(scene=dict(aspectmode="data"))
+        fig.update_layout(scene=dict(xaxis_title="x", yaxis_title="y", zaxis_title="z"))
 
     # Default parameters which are used when `layout.scene.camera` is not provided
     # camera1 = dict(

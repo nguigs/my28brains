@@ -8,7 +8,13 @@ os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import inspect
 
 import geomstats.backend as gs
+
+# from ISLP.models import (ModelSpec as ms, summarize, poly)
+import pandas as pd
 from geomstats.geometry.discrete_surfaces import DiscreteSurfaces
+
+# import statsmodels.api as sm
+from scipy import stats
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import PolynomialFeatures
@@ -185,7 +191,7 @@ def fit_geodesic_regression(
     return intercept_hat, coef_hat, gr
 
 
-def fit_linear_regression(y, X):  # , device = "cuda:0"):
+def fit_linear_regression(y, X, return_p=False, X_df=None):  # , device = "cuda:0"):
     """Perform linear regression on parameterized meshes.
 
     Parameters
@@ -201,26 +207,41 @@ def fit_linear_regression(y, X):  # , device = "cuda:0"):
     coef_hat: slope of regression fit
     """
     original_point_shape = y[0].shape
+    original_y = y
+    original_X = X
 
     print("y.shape: ", y.shape)
     print("original_point_shape: ", original_point_shape)
     print("X.shape: ", X.shape)
 
-    y = gs.array(y.reshape((len(X), -1)))
-    X = gs.array(X.reshape(len(X), -1))
-    print("regression reshaped y.shape: ", y.shape)
+    if return_p:
+        y = gs.array(y.reshape((len(X), -1)))
+        X = gs.array(X.reshape(len(X), -1))
+        print("regression reshaped y.shape: ", y.shape)
+        print("regression reshaped X.shape: ", X.shape)
 
-    lr = LinearRegression()
+        lr = LinearRegression()
 
-    lr.fit(X, y)
+        lr.fit(X, y)
+        intercept_hat, coef_hat = lr.intercept_, lr.coef_
 
-    intercept_hat, coef_hat = lr.intercept_, lr.coef_
+        p_values = calculate_p_values(original_X, original_y, lr)
+
+    else:
+        y = gs.array(y.reshape((len(X), -1)))
+        X = gs.array(X.reshape(len(X), -1))
+        print("regression reshaped y.shape: ", y.shape)
+
+        lr = LinearRegression()
+
+        lr.fit(X, y)
+
+        intercept_hat, coef_hat = lr.intercept_, lr.coef_
 
     if X.shape[1] > 1:
         coef_hat = coef_hat.reshape(
             X.shape[1], original_point_shape[0], original_point_shape[1]
         )
-
     else:
         coef_hat = coef_hat.reshape(original_point_shape)
 
@@ -231,7 +252,81 @@ def fit_linear_regression(y, X):  # , device = "cuda:0"):
     intercept_hat = gs.array(intercept_hat)
     coef_hat = gs.array(coef_hat)
 
+    if return_p:
+        return intercept_hat, coef_hat, lr, p_values
     return intercept_hat, coef_hat, lr
+
+
+def calculate_p_values(X, y, lr, tails=2):
+    """Calculate p-values for linear regression.
+
+    Parameters
+    ----------
+    X: list of X corresponding to y
+    y: vertices of mesh sequence to be fit
+    lr: linear regression model
+    tails: number of tails for t-distribution (1 or 2)
+        1 tail means we are testing for significance in one direction
+        2 tails means we are testing for significance in both directions
+        (aka, 2 tails means we are just testing for any significance at all,
+        in either direction from the null hypothesis)
+    we choose to test for significance in one direction, because we are
+    interested in whether the hormone levels have a positive or negative
+    effect on the mesh.
+
+    Note: can't use sm.OLS(y, X).fit() because y is a 3D array,
+    and sm.OLS() expects a 1D array. When we try to flatten y completely,
+    we lose the information about which sample each vertex belongs to.
+
+    Returns
+    -------
+    p_values: list of p-values for each coefficient
+    """
+    y_predictions = lr.predict(X)
+    y_predictions = y_predictions.reshape(y.shape)
+    residuals = gs.array(y - y_predictions)
+
+    num_samples = X.shape[0]
+    num_hormones = X.shape[1]
+    num_vertices = y.shape[1]
+
+    # add a constant to the X matrix
+    X = gs.array(X)
+    X = gs.concatenate((gs.ones((len(X), 1)), X), axis=1)
+
+    variance = gs.linalg.norm(residuals) / (num_samples - num_hormones)
+
+    print("varance.shape: ", variance.shape)
+    xtx_inv = np.linalg.inv(np.dot(X.T, X))
+    xtx_inv_diag = np.diag(xtx_inv)
+    sqrt_xtx_inv_diag = gs.sqrt(xtx_inv_diag)
+    sqrt_xtx_inv_diag_coef = sqrt_xtx_inv_diag[1:]
+    # sqrt_xtx_inv_diag_intercept = sqrt_xtx_inv_diag[0]
+
+    print("lr.coef_: ", lr.coef_.shape)
+    coef_hats = lr.coef_
+    coef_hats = coef_hats.reshape(num_hormones, num_vertices * 3)
+    print("coefs.shape: ", coef_hats.shape)
+
+    t_values = []
+    for i in range(num_hormones):
+        t_values.append(coef_hats[i] / (sqrt_xtx_inv_diag_coef[i] * variance))
+
+    # t_value_1 = coef_hats[0] / (sqrt_xtx_inv_diag_coef[0] * variance)
+    # t_value_2 = coef_hats[1] / (sqrt_xtx_inv_diag_coef[1] * variance)
+    # t_value_3 = coef_hats[2] / (sqrt_xtx_inv_diag_coef[2] * variance)
+    # print("t_values shape: ", t_value_1.shape, t_value_2.shape, t_value_3.shape)
+
+    # t_values = coef_hats / (sqrt_xtx_inv_diag_coef * variance)
+    # t_values = gs.stack([t_value_1, t_value_2, t_value_3])
+    t_values = gs.array(t_values)
+
+    p_values = tails * (1 - stats.t.cdf(np.abs(t_values), num_samples - num_hormones))
+    p_value_medians = np.median(p_values, axis=1)
+    print("p_values: ", p_values)
+    print("median of vertex p-values: ", p_value_medians)
+
+    return p_values, p_value_medians
 
 
 def fit_polynomial_regression(y, X, degree=2):

@@ -95,7 +95,7 @@ i_template = 0
 template_day_index = 2
 
 # WORKING
-initial_decimation_fact = 10  # was 10
+initial_decimation_fact = 3  # was 10
 scaling_factor = 2 * initial_decimation_fact
 
 # range of days to interpolate in between
@@ -116,7 +116,7 @@ run_interpolate = False
 dataset_name = "pregnancy_mesh"
 hormone_name = "Prog"  # hormone to use for lr and poly regression
 sort = False
-train_test_split = 0.8
+train_test_split = 0.8  # 0.8
 use_cuda = False
 
 poly_degree = 3
