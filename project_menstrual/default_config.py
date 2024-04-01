@@ -45,6 +45,10 @@ os.chdir(gitroot_path[:-1])
 work_dir = os.getcwd()  # code/my28brains/
 code_dir = os.path.dirname(work_dir)  # code/
 raw_dir = "/home/data/28andMeOC_correct"
+raw_end_day = 60
+day_dirs = [os.path.join(raw_dir, f"Day{i:02d}") for i in range(1, raw_end_day + 1)]
+
+
 project_dir = os.path.join(
     os.getcwd(), "project_menstrual"
 )  # code/my28brains/project_regression/
@@ -76,19 +80,19 @@ stepsize = {
 run_type = "base"  # can either be "base" for base result or "exp" for testing.
 
 # Brain hemispheres and anatomical structures
-hemisphere = "left"  # , "right"]
-structure_id = -1
+hemispheres = ["left"]  # , "right"]
+structure_ids = [-1]
 
 # Face area threshold for non-degenerate meshes:
 # the less we decimate, the more likely it is to have small faces
 # thus the thresholt needs to be higher
-area_threshold = 0.00  # [0.00] 0.0001, 0.001, 0.01, 0.1, 1.0]
+area_thresholds = [0.00]  # [0.00] 0.0001, 0.001, 0.01, 0.1, 1.0]
 
 # Define template structure of the mesh that will be used
 # for all mesh in the interpolation
 # Every mesh will have the same number of vertices and faces.
 i_template = 0
-template_day = 2
+template_day_index = 2
 
 # WORKING
 initial_decimation_fact = 10  # was 10
