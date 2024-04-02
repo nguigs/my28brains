@@ -16,6 +16,7 @@ import subprocess
 import sys
 
 import dash
+import dash_bootstrap_components as dbc
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -97,42 +98,33 @@ X_multiple = gs.vstack(
 
 mr_score_array = training.compute_R2(y, X_multiple, test_indices, train_indices)
 
-# X_multiple_predict = gs.array(X_multiple.reshape(len(X_multiple), -1))
-# y_pred_for_mr = mr.predict(X_multiple_predict)
-# y_pred_for_mr = y_pred_for_mr.reshape([len(X_multiple), n_vertices, 3])
+# hormone p values
+progesterone_p_value = p_values[0]
+estrogen_p_value = p_values[1]
+lh_p_value = p_values[2]
 
 # Parameters for sliders
 
 hormones_info = {
     "progesterone": {"min_value": 1, "max_value": 103, "step": 10},
-    "LH": {"min_value": 1, "max_value": 8, "step": 1},
     "estrogen": {"min_value": 3, "max_value": 10200, "step": 100},
+    "LH": {"min_value": 1, "max_value": 8, "step": 1},
     # "gest_week": {"min_value": -3, "max_value": 162, "step": 10},
 }
 
-app = Dash(__name__)  # , external_stylesheets=external_stylesheets)
+app = Dash(
+    __name__, external_stylesheets=[dbc.themes.BOOTSTRAP]
+)  # , external_stylesheets=external_stylesheets)
 
-app.layout = html.Div(
+sliders = dbc.Card(
     [
-        html.H1(
-            children="Hello world!",
-            className="hello",
-            style={"color": "#00361c", "text-align": "center"},
-        )
-    ]
-)
-
-
-app.layout = html.Div(
-    children=[
-        html.Div(
+        dbc.Stack(
             [
-                dcc.Graph(id="mesh-plot"),
-            ],
-        ),  # style={'padding': '20px 0px 0px 0px'}
-        html.Div(
-            [
-                html.H6("Progesterone ng/ml"),
+                # html.H6(f"Progesterone ng/ml, p-value: {progesterone_p_value}"),
+                dbc.Label(
+                    f"Progesterone ng/ml, p-value: {progesterone_p_value:05f}",
+                    style={"font-size": 50},
+                ),
                 dcc.Slider(
                     id="progesterone-slider",
                     min=hormones_info["progesterone"]["min_value"],
@@ -140,15 +132,20 @@ app.layout = html.Div(
                     step=hormones_info["progesterone"]["step"],
                     value=progesterone_average,
                     marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["progesterone"]["min_value"],
-                            hormones_info["progesterone"]["max_value"],
-                            hormones_info["progesterone"]["step"],
-                        )
+                        hormones_info["progesterone"]["min_value"]: {"label": "min"},
+                        hormones_info["progesterone"]["max_value"]: {"label": "max"},
+                    },
+                    tooltip={
+                        "placement": "bottom",
+                        "always_visible": True,
+                        "style": {"fontSize": "30px"},
                     },
                 ),
-                html.H6("Estrogen pg/ml"),
+                # html.H6(f"Estrogen pg/ml, p-value: {estrogen_p_value}"),
+                dbc.Label(
+                    f"Estrogen pg/ml, p-value: {estrogen_p_value:05f}",
+                    style={"font-size": 50},
+                ),
                 dcc.Slider(
                     id="estrogen-slider",
                     min=hormones_info["estrogen"]["min_value"],
@@ -156,15 +153,19 @@ app.layout = html.Div(
                     step=hormones_info["estrogen"]["step"],
                     value=estrogen_average,
                     marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["estrogen"]["min_value"],
-                            hormones_info["estrogen"]["max_value"],
-                            hormones_info["estrogen"]["step"],
-                        )
+                        hormones_info["estrogen"]["min_value"]: {"label": "min"},
+                        hormones_info["estrogen"]["max_value"]: {"label": "max"},
+                    },
+                    tooltip={
+                        "placement": "bottom",
+                        "always_visible": True,
+                        "style": {"fontSize": "30px"},
                     },
                 ),
-                html.H6("LH ng/ml"),
+                # html.H6(f"LH ng/ml, p-value: {lh_p_value}"),
+                dbc.Label(
+                    f"LH ng/ml, p-value: {lh_p_value:05f}", style={"font-size": 50}
+                ),
                 dcc.Slider(
                     id="LH-slider",
                     min=hormones_info["LH"]["min_value"],
@@ -172,12 +173,13 @@ app.layout = html.Div(
                     step=hormones_info["LH"]["step"],
                     value=lh_average,
                     marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["LH"]["min_value"],
-                            hormones_info["LH"]["max_value"],
-                            hormones_info["LH"]["step"],
-                        )
+                        hormones_info["LH"]["min_value"]: {"label": "min"},
+                        hormones_info["LH"]["max_value"]: {"label": "max"},
+                    },
+                    tooltip={
+                        "placement": "bottom",
+                        "always_visible": True,
+                        "style": {"fontSize": "30px"},
                     },
                 ),
                 # html.H6("Gestation Week"),
@@ -197,9 +199,25 @@ app.layout = html.Div(
                 #     },
                 # ),
             ],
-            style={"width": "60%", "display": "inline-block"},
+            gap=3,
         ),
-    ]
+    ],
+    body=True,
+)
+
+app.layout = dbc.Container(
+    [
+        html.H1("Brain Shape Prediction with Hormones, Pregnancy"),
+        html.Hr(),
+        dbc.Row(
+            [
+                dbc.Col(sliders, md=6),
+                dbc.Col(dcc.Graph(id="mesh-plot"), md=6),
+            ],
+            align="center",
+        ),
+    ],
+    fluid=True,
 )
 
 
@@ -243,6 +261,15 @@ def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
     j = faces[:, 1]
     k = faces[:, 2]
 
+    layout = go.Layout(
+        margin=go.layout.Margin(
+            l=0,  # left margin
+            r=0,  # right margin
+            b=0,  # bottom margin
+            t=0,  # top margin
+        )
+    )
+
     fig = go.Figure(
         data=[
             go.Mesh3d(
@@ -258,7 +285,8 @@ def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
                 name="y",
                 # showscale=True,
             )
-        ]
+        ],
+        layout=layout,
     )
 
     fig.update_layout(width=1000)

@@ -15,9 +15,11 @@ from geomstats.geometry.discrete_surfaces import DiscreteSurfaces
 
 # import statsmodels.api as sm
 from scipy import stats
+from scipy.stats import norm
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
 from sklearn.preprocessing import PolynomialFeatures
+from statsmodels.stats.multitest import multipletests
 
 import H2_SurfaceMatch.utils.input_output as h2_io  # noqa: E402
 
@@ -233,7 +235,6 @@ def fit_linear_regression(y, X, return_p=False, X_df=None):  # , device = "cuda:
         print("regression reshaped y.shape: ", y.shape)
 
         lr = LinearRegression()
-
         lr.fit(X, y)
 
         intercept_hat, coef_hat = lr.intercept_, lr.coef_
@@ -253,11 +254,40 @@ def fit_linear_regression(y, X, return_p=False, X_df=None):  # , device = "cuda:
     coef_hat = gs.array(coef_hat)
 
     if return_p:
-        return intercept_hat, coef_hat, lr, p_values
+        return intercept_hat, coef_hat, lr, np.array(p_values)
     return intercept_hat, coef_hat, lr
 
 
-def calculate_p_values(X, y, lr, tails=2):
+def stouffer_combination(p_value_matrix):
+    """Combine p-values using Stouffer's method.
+
+    Parameters
+    ----------
+    t_score: list of z-scores for one coefficient
+        (corresponding to one hormone)
+        shape: (num_vertices * 3, 1)
+    tails: number of tails for t-distribution (1 or 2)
+
+    Returns
+    -------
+    combined_p_value: combined p-value for one coefficient
+    """
+    t_score_matrix = gs.array(norm.ppf(1 - np.array(p_value_matrix)))
+    print("np.array(t_score_matrix).size", np.array(t_score_matrix).size)
+    combined_t_score = gs.sum(t_score_matrix) / gs.sqrt(np.array(t_score_matrix).size)
+    combined_p_value = 1 - norm.cdf(combined_t_score)
+    return combined_p_value
+
+
+def fisher_combination(p_value_matrix):
+    """Combine p-values using Fisher's method."""
+    t_score_matrix = gs.array(norm.ppf(1 - np.array(p_value_matrix)))
+    chi_square = gs.sum(t_score_matrix**2)
+    combined_p_value = 1 - norm.cdf(np.sqrt(chi_square))
+    return combined_p_value
+
+
+def calculate_p_values(X, y, lr, method="fisher", tails=2):
     """Calculate p-values for linear regression.
 
     Parameters
@@ -273,6 +303,7 @@ def calculate_p_values(X, y, lr, tails=2):
     we choose to test for significance in one direction, because we are
     interested in whether the hormone levels have a positive or negative
     effect on the mesh.
+    method: method for combining p-values. Options are "stouffer" and "fisher".
 
     Note: can't use sm.OLS(y, X).fit() because y is a 3D array,
     and sm.OLS() expects a 1D array. When we try to flatten y completely,
@@ -301,32 +332,129 @@ def calculate_p_values(X, y, lr, tails=2):
     xtx_inv_diag = np.diag(xtx_inv)
     sqrt_xtx_inv_diag = gs.sqrt(xtx_inv_diag)
     sqrt_xtx_inv_diag_coef = sqrt_xtx_inv_diag[1:]
-    # sqrt_xtx_inv_diag_intercept = sqrt_xtx_inv_diag[0]
 
     print("lr.coef_: ", lr.coef_.shape)
     coef_hats = lr.coef_
     coef_hats = coef_hats.reshape(num_hormones, num_vertices * 3)
     print("coefs.shape: ", coef_hats.shape)
 
-    t_values = []
+    p_values = []
     for i in range(num_hormones):
-        t_values.append(coef_hats[i] / (sqrt_xtx_inv_diag_coef[i] * variance))
+        t_value_matrix = coef_hats[i] / (sqrt_xtx_inv_diag_coef[i] * variance)
+        p_value_matrix = tails * (
+            1 - stats.t.cdf(np.abs(t_value_matrix), num_samples - num_hormones)
+        )
+        print("p_value_matrix median: ", np.median(p_value_matrix))
+        if method == "stouffer":
+            p_value = stouffer_combination(p_value_matrix)
+        elif method == "fisher":
+            p_value = fisher_combination(p_value_matrix)
+        p_values.append(p_value)
+    p_values = gs.array(p_values)
 
-    # t_value_1 = coef_hats[0] / (sqrt_xtx_inv_diag_coef[0] * variance)
-    # t_value_2 = coef_hats[1] / (sqrt_xtx_inv_diag_coef[1] * variance)
-    # t_value_3 = coef_hats[2] / (sqrt_xtx_inv_diag_coef[2] * variance)
-    # print("t_values shape: ", t_value_1.shape, t_value_2.shape, t_value_3.shape)
-
-    # t_values = coef_hats / (sqrt_xtx_inv_diag_coef * variance)
-    # t_values = gs.stack([t_value_1, t_value_2, t_value_3])
-    t_values = gs.array(t_values)
-
-    p_values = tails * (1 - stats.t.cdf(np.abs(t_values), num_samples - num_hormones))
-    p_value_medians = np.median(p_values, axis=1)
     print("p_values: ", p_values)
-    print("median of vertex p-values: ", p_value_medians)
 
-    return p_values, p_value_medians
+    return p_values
+
+    # t_values = []
+    # for i in range(num_hormones):
+    #     t_values.append(coef_hats[i] / (sqrt_xtx_inv_diag_coef[i] * variance))
+    # t_values = gs.array(t_values)
+
+    # p_values = tails * (1 - stats.t.cdf(np.abs(t_values), num_samples - num_hormones))
+    # p_value_medians = np.median(p_values, axis=1)
+    # print("p_values: ", p_values)
+    # print("median of vertex p-values: ", p_value_medians)
+
+    # adjusted_p_values = []
+    # for i in range(num_hormones):
+    #     print(f"p-value for hormone {i}: {p_values[i]}")
+    #     p_value = p_values[i]
+    #     adjusted_p_value = multipletests(p_value, method='fdr_bh')[1]
+    #     adjusted_p_values.append(adjusted_p_value)
+    # adjusted_p_values = gs.array(adjusted_p_values)
+
+    # adjusted_p_value_medians = np.median(adjusted_p_values, axis=1)
+    # print("adjusted p-values: ", adjusted_p_values)
+    # print("median of vertex adjusted p-values: ", adjusted_p_value_medians)
+
+    # return p_values, p_value_medians, adjusted_p_values, adjusted_p_value_medians
+
+
+# def calculate_p_values_via_f_statistic(X, y, lr, tails=2):
+#     """Calculate p-values for linear regression.
+
+#     Parameters
+#     ----------
+#     X: list of X corresponding to y
+#     y: vertices of mesh sequence to be fit
+#     lr: linear regression model
+
+#     f statistic: F = (RSS1 - RSS2) / (p2 - p1) / (RSS2 / (n - p2))
+#     where RSS1 is the residual sum of squares for the full model,
+#     RSS2 is the residual sum of squares for the reduced model,
+#     p1 is the number of parameters in the full model,
+#     p2 is the number of parameters in the reduced model,
+#     n is the number of samples.
+
+#     We use the f statistic because beta hat is a vector of coefficients,
+#     and we want to test whether the entire vector is significant.
+
+#     Question: should the degrees of freedom include the number of vertices?
+#     Answer: no, because the vertices are not parameters in the model.
+#     Question: is this true even though coef_hat has the same shape as y?
+#     Answer: yes, because the coefficients are not vertices.
+#     Question: is this true even though there is one coefficient for each vertex?
+
+#     """
+#     y_predictions = lr.predict(X)
+#     y_predictions = y_predictions.reshape(y.shape)
+#     RSS_residuals_full = gs.array(y - y_predictions)
+
+#     # N = numer of days
+#     # p = number of hormones
+
+#     num_samples = X.shape[0]
+#     num_hormones = X.shape[1]
+#     num_vertices = y.shape[1]
+#     print("num_samples: ", num_samples)
+#     print("num_hormones: ", num_hormones)
+#     print("num_vertices: ", num_vertices)
+
+#     num_features = num_hormones * num_vertices * 3
+
+#     p_values = []
+#     for i in range(num_hormones):
+#         beta_hats.append(lr.coef_[i])
+
+#         # Define degrees of freedom for the full model and the reduced model
+#         df_full = num_samples * num_vertices * 3 * num_hormones - num_features
+#         # df_reduced =
+
+#         # Calculate the residual sum of squares for the reduced model
+#         beta_hat_reduced = []
+#         for j in range(num_hormones):
+#             if i != j:
+#                 beta_hat_reduced.append(lr.coef_[j])
+#             else:
+#                 beta_hat_reduced.append(gs.zeros(lr.coef_[j].shape))
+#         beta_hat_reduced = gs.array(beta_hat_reduced)
+
+#         lr_reduced = LinearRegression()
+#         lr_reduced.coef_ = beta_hat_reduced
+#         y_predictions_reduced = lr_reduced.predict(X)
+#         y_predictions_reduced = y_predictions_reduced.reshape(y.shape)
+#         RSS_residuals_reduced = gs.array(y - y_predictions_reduced)
+
+#         # Calculate the F-statistic
+#         RSS_full = gs.linalg.norm(RSS_residuals_full)
+#         RSS_reduced = gs.linalg.norm(RSS_residuals_reduced)
+#         f_statistic = ((RSS_reduced - RSS_full) / (df_full - df_reduced)) / (
+#             RSS_full / (num_features - df_full)
+#         )
+
+#         # Calculate the p-value
+#         p_value = f.sf(f_statistic, df_full, num_features - df_full)
 
 
 def fit_polynomial_regression(y, X, degree=2):
