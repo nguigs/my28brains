@@ -95,7 +95,7 @@ i_template = 0
 template_day_index = 2
 
 # WORKING
-initial_decimation_fact = 3  # was 10
+initial_decimation_fact = 10  # was 10
 scaling_factor = 2 * initial_decimation_fact
 
 # range of days to interpolate in between

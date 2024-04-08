@@ -220,6 +220,7 @@ def load_synthetic_data(config):
                 config.dataset_name,
                 config.project_linear_noise,
                 noise_factor=config.noise_factor,
+                random_seed=config.random_seed,
             )
         else:
             mesh_sequence_vertices = synthetic.add_geodesic_noise(
@@ -227,6 +228,7 @@ def load_synthetic_data(config):
                 noiseless_mesh_sequence_vertices,
                 config.dataset_name,
                 noise_factor=config.noise_factor,
+                random_seed=config.random_seed,
             )
 
         print("Noisy mesh_sequence vertices: ", mesh_sequence_vertices.shape)
@@ -265,6 +267,7 @@ def load_synthetic_data(config):
                 config.dataset_name,
                 config.project_linear_noise,
                 noise_factor=config.noise_factor,
+                random_seed=config.random_seed,
             )
         else:
             y_noisy = synthetic.add_geodesic_noise(
@@ -272,6 +275,7 @@ def load_synthetic_data(config):
                 y_noiseless,
                 config.dataset_name,
                 noise_factor=config.noise_factor,
+                random_seed=config.random_seed,
             )
         return space, y_noisy, y_noiseless, X, true_intercept, true_coef
     else:

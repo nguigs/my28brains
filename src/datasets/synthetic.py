@@ -331,7 +331,7 @@ def generate_unparameterized_mesh_geodesic(start_mesh, end_mesh, config, gpu_id=
     return geod, F0
 
 
-def add_geodesic_noise(space, y, dataset_name, noise_factor=0.01):
+def add_geodesic_noise(space, y, dataset_name, noise_factor=0.01, random_seed=0):
     """Generate synthetic data on the hypersphere or hyperboloid.
 
     Parameters
@@ -340,6 +340,7 @@ def add_geodesic_noise(space, y, dataset_name, noise_factor=0.01):
     y: points on manifold, torch.tensor, shape=[n_samples, dim of data]
     noise_std: float, standard deviation of noise
     """
+    gs.random.seed(random_seed)
     n_samples = len(y)
 
     if dataset_name == "synthetic_mesh":
@@ -369,11 +370,15 @@ def add_geodesic_noise(space, y, dataset_name, noise_factor=0.01):
     return y_noisy
 
 
-def add_linear_noise(space, y, dataset_name, project_linear_noise, noise_factor=0.01):
+def add_linear_noise(
+    space, y, dataset_name, project_linear_noise, noise_factor=0.01, random_seed=0
+):
     """Generate synthetic data on the hypersphere or hyperboloid.
 
     Note: data is "random".
     """
+    gs.random.seed(random_seed)
+
     if dataset_name == "synthetic_mesh":
         mesh_sequence_vertices = y
         diameter = data_utils.mesh_diameter(mesh_sequence_vertices[0])

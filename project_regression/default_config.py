@@ -119,22 +119,23 @@ run_interpolate = False
 
 model = 2  # 1, 2, 3, 4
 
-if model == 1:
+if model == 1:  # TODO: hyperboloid LR all noise levels.
     linear_noise = False
     project_linear_noise = False
     dataset_name = [
         "hyperboloid",
         "hypersphere",
-        # "synthetic_mesh"
     ]
-if model == 2:  # todo: new geodesic
+    space_dimension = [2]  # [2, 3, 5, 10] hyperboloid GLS, LLS, Lin2015.
+if model == 2:  # only do for dim 2
     linear_noise = True
     project_linear_noise = False
     dataset_name = [
         "hyperboloid",
         "hypersphere",
     ]
-if model == 3:  # # todo: new noise levels & new geodesic
+    space_dimension = [2]
+if model == 3:  # only do for dim 2
     linear_noise = True
     project_linear_noise = True
     # Note that we only use hyperboloid and hypersphere data for this model
@@ -142,7 +143,8 @@ if model == 3:  # # todo: new noise levels & new geodesic
         "hyperboloid",
         "hypersphere",
     ]
-if model == 4:
+    space_dimension = [2]
+if model == 4:  # only do for dim 2
     linear_noise = True
     project_linear_noise = True
     # note we only use mesh data for this model,
@@ -156,13 +158,15 @@ if model == 4:
 if model == 2:
     estimator = ["LLS", "Lin2015", "LR"]
 else:
-    estimator = ["GLS", "LLS", "Lin2015", "LR"]
-
-
-space_dimension = [2, 3, 5, 10]  # 2 or 3 (only called for hypersphere and hyperboloid)
+    estimator = ["GLS", "LLS", "Lin2015", "LR"]  # ["LR"]
 
 n_steps = [3]  # n steps for the exp solver of geomstats. 3, 5
-synthetic_tan_vec_length = [5]  # done for 1 -- for hypersphere and hyperboloid only
+synthetic_tan_vec_length = [
+    1,
+    5,
+    10,
+]  # done for 1 -- for hypersphere and hyperboloid only
+random_seed = [0, 4, 7, 47, 474]  # 0, 1, 2, 3, 4, 5, 6, 7, 8, 9
 tol_factor = [
     0.01,
     # 0.1,
@@ -178,10 +182,10 @@ start_shape = [
 ]  # "cube", "distorted_cube", 'twisted_cube', "sphere", "ellipsoid",
 end_shape = ["twisted_cube"]  # note, must have same number of shapes as start_shape
 noise_factor = [
-    # 0.0,
-    # 0.01,
-    # 0.1,
-    # 0.2,
+    0.0,
+    0.01,
+    0.1,
+    0.2,
     0.4,
     0.6,
 ]  # , 0.0001, 0.001, 0.01]  # noise added to the data.

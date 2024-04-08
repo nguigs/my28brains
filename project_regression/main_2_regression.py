@@ -399,7 +399,12 @@ def main_run(config):
             )
 
             fig = viz.benchmark_data_sequence(
-                space, y, y_pred_for_lr, estimator_y_prediction, true_geodesic
+                space,
+                y,
+                y_pred_for_lr,
+                estimator_y_prediction,
+                true_geodesic,
+                axis_rotation=45,
             )
             plt = wandb.Image(fig)
 
@@ -464,12 +469,19 @@ def main():
                 main_run(config)
 
         elif dataset_name == "hypersphere" or dataset_name == "hyperboloid":
-            for (space_dimension, synthetic_tan_vec_length) in itertools.product(
-                default_config.space_dimension, default_config.synthetic_tan_vec_length
+            for (
+                space_dimension,
+                synthetic_tan_vec_length,
+                random_seed,
+            ) in itertools.product(
+                default_config.space_dimension,
+                default_config.synthetic_tan_vec_length,
+                default_config.random_seed,
             ):
                 config = {
                     "space_dimension": space_dimension,
                     "synthetic_tan_vec_length": synthetic_tan_vec_length,
+                    "random_seed": random_seed,
                 }
                 config.update(main_config)
                 main_run(config)
