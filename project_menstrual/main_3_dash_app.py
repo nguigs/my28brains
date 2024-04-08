@@ -70,9 +70,9 @@ test_indices = np.sort(test_indices)
 
 # TODO: instead, save these values in main_2, and then load them here. or, figure out how to predict the mesh using just the intercept and coef learned here, and then load them.
 
-progesterone_levels = gs.array(all_hormone_levels["prog"].values)
-estrogen_levels = gs.array(all_hormone_levels["estro"].values)
-lh_levels = gs.array(all_hormone_levels["lh"].values)
+progesterone_levels = gs.array(all_hormone_levels["Prog"].values)
+estrogen_levels = gs.array(all_hormone_levels["Estro"].values)
+lh_levels = gs.array(all_hormone_levels["LH"].values)
 dheas_levels = gs.array(all_hormone_levels["DHEAS"].values)
 shbg_levels = gs.array(all_hormone_levels["SHBG"].values)
 fsh_levels = gs.array(all_hormone_levels["FSH"].values)
@@ -102,29 +102,28 @@ X_multiple = gs.vstack(
     multiple_intercept_hat,
     multiple_coef_hat,
     mr,
-    p_value_medians,
+    percent_significant_p_values,
 ) = training.fit_linear_regression(y, X_multiple, return_p=True)
 
 mr_score_array = training.compute_R2(y, X_multiple, test_indices, train_indices)
 
 # hormone p values
-progesterone_p_value = p_value_medians[0]
-estrogen_p_value = p_value_medians[1]
-lh_p_value = p_value_medians[2]
-dheas_p_value = p_value_medians[3]
-shbg_p_value = p_value_medians[4]
-fsh_p_value = p_value_medians[5]
+progesterone_p_value = percent_significant_p_values[0]
+estrogen_p_value = percent_significant_p_values[1]
+lh_p_value = percent_significant_p_values[2]
+dheas_p_value = percent_significant_p_values[3]
+shbg_p_value = percent_significant_p_values[4]
+fsh_p_value = percent_significant_p_values[5]
 
 # Parameters for sliders
 
 hormones_info = {
-    "progesterone": {"min_value": 1, "max_value": 103, "step": 10},
-    "estrogen": {"min_value": 3, "max_value": 10200, "step": 100},
-    "LH": {"min_value": 1, "max_value": 8, "step": 1},
-    # "gest_week": {"min_value": -3, "max_value": 162, "step": 10},
-    "DHEAS": {"min_value": 0, "max_value": 10, "step": 1},
-    "SHBG": {"min_value": 0, "max_value": 100, "step": 10},
-    "FSH": {"min_value": 0, "max_value": 10, "step": 1},
+    "progesterone": {"min_value": 0, "max_value": 15, "step": 1},
+    "FSH": {"min_value": 0, "max_value": 15, "step": 1},
+    "LH": {"min_value": 0, "max_value": 50, "step": 5},
+    "estrogen": {"min_value": 0, "max_value": 250, "step": 10},
+    "DHEAS": {"min_value": 0, "max_value": 300, "step": 10},
+    "SHBG": {"min_value": 0, "max_value": 70, "step": 5},
 }
 
 app = Dash(
@@ -137,7 +136,7 @@ sliders = dbc.Card(
             [
                 # html.H6(f"Progesterone ng/ml, p-value: {progesterone_p_value}"),
                 dbc.Label(
-                    f"Progesterone ng/ml, p-value: {progesterone_p_value:05f}",
+                    f"Progesterone ng/ml, percent_significant_p_values: {progesterone_p_value:05f}",
                     style={"font-size": 50},
                 ),
                 dcc.Slider(
@@ -158,7 +157,7 @@ sliders = dbc.Card(
                 ),
                 # html.H6(f"Estrogen pg/ml, p-value: {estrogen_p_value}"),
                 dbc.Label(
-                    f"Estrogen pg/ml, p-value: {estrogen_p_value:05f}",
+                    f"Estrogen pg/ml, percent_significant_p_values: {estrogen_p_value:05f}",
                     style={"font-size": 50},
                 ),
                 dcc.Slider(
@@ -179,7 +178,8 @@ sliders = dbc.Card(
                 ),
                 # html.H6(f"LH ng/ml, p-value: {lh_p_value}"),
                 dbc.Label(
-                    f"LH ng/ml, p-value: {lh_p_value:05f}", style={"font-size": 50}
+                    f"LH ng/ml, percent_significant_p_values: {lh_p_value:05f}",
+                    style={"font-size": 50},
                 ),
                 dcc.Slider(
                     id="LH-slider",
@@ -197,39 +197,11 @@ sliders = dbc.Card(
                         "style": {"fontSize": "30px"},
                     },
                 ),
-                html.H6("Progesterone ng/ml"),
-                dcc.Slider(
-                    id="progesterone-slider",
-                    min=hormones_info["progesterone"]["min_value"],
-                    max=hormones_info["progesterone"]["max_value"],
-                    step=hormones_info["progesterone"]["step"],
-                    value=progesterone_average,
-                    marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["progesterone"]["min_value"],
-                            hormones_info["progesterone"]["max_value"],
-                            hormones_info["progesterone"]["step"],
-                        )
-                    },
+                # html.H6(f"DHEAS percent_significant_p_values: {dheas_p_value}"),
+                dbc.Label(
+                    f"DHEAS ng/ml, percent_significant_p_values: {dheas_p_value:05f}",
+                    style={"font-size": 50},
                 ),
-                html.H6("Estrogen pg/ml"),
-                dcc.Slider(
-                    id="estrogen-slider",
-                    min=hormones_info["estrogen"]["min_value"],
-                    max=hormones_info["estrogen"]["max_value"],
-                    step=hormones_info["estrogen"]["step"],
-                    value=estrogen_average,
-                    marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["estrogen"]["min_value"],
-                            hormones_info["estrogen"]["max_value"],
-                            hormones_info["estrogen"]["step"],
-                        )
-                    },
-                ),
-                html.H6("DHEAS"),
                 dcc.Slider(
                     id="DHEAS-slider",
                     min=hormones_info["DHEAS"]["min_value"],
@@ -237,31 +209,20 @@ sliders = dbc.Card(
                     step=hormones_info["DHEAS"]["step"],
                     value=dheas_average,
                     marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["DHEAS"]["min_value"],
-                            hormones_info["DHEAS"]["max_value"],
-                            hormones_info["DHEAS"]["step"],
-                        )
+                        hormones_info["DHEAS"]["min_value"]: {"label": "min"},
+                        hormones_info["DHEAS"]["max_value"]: {"label": "max"},
+                    },
+                    tooltip={
+                        "placement": "bottom",
+                        "always_visible": True,
+                        "style": {"fontSize": "30px"},
                     },
                 ),
-                html.H6("LH ng/ml"),
-                dcc.Slider(
-                    id="LH-slider",
-                    min=hormones_info["LH"]["min_value"],
-                    max=hormones_info["LH"]["max_value"],
-                    step=hormones_info["LH"]["step"],
-                    value=lh_average,
-                    marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["LH"]["min_value"],
-                            hormones_info["LH"]["max_value"],
-                            hormones_info["LH"]["step"],
-                        )
-                    },
+                # html.H6(f"FSH ng/ml, percent_significant_p_values {fsh_p_value}"),
+                dbc.Label(
+                    f"FSH ng/ml, percent_significant_p_values: {fsh_p_value:05f}",
+                    style={"font-size": 50},
                 ),
-                html.H6("FSH ng/ml"),
                 dcc.Slider(
                     id="FSH-slider",
                     min=hormones_info["FSH"]["min_value"],
@@ -269,15 +230,20 @@ sliders = dbc.Card(
                     step=hormones_info["FSH"]["step"],
                     value=fsh_average,
                     marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["FSH"]["min_value"],
-                            hormones_info["FSH"]["max_value"],
-                            hormones_info["FSH"]["step"],
-                        )
+                        hormones_info["FSH"]["min_value"]: {"label": "min"},
+                        hormones_info["FSH"]["max_value"]: {"label": "max"},
+                    },
+                    tooltip={
+                        "placement": "bottom",
+                        "always_visible": True,
+                        "style": {"fontSize": "30px"},
                     },
                 ),
-                html.H6("SHBG"),
+                # html.H6(f"SHBG, percent_significant_p_values: {shbg_p_value}"),
+                dbc.Label(
+                    f"SHBG ng/ml, percent_significant_p_values: {shbg_p_value:05f}",
+                    style={"font-size": 50},
+                ),
                 dcc.Slider(
                     id="SHBG-slider",
                     min=hormones_info["SHBG"]["min_value"],
@@ -285,19 +251,20 @@ sliders = dbc.Card(
                     step=hormones_info["SHBG"]["step"],
                     value=shbg_average,
                     marks={
-                        str(i): str(i)
-                        for i in range(
-                            hormones_info["SHBG"]["min_value"],
-                            hormones_info["SHBG"]["max_value"],
-                            hormones_info["SHBG"]["step"],
-                        )
+                        hormones_info["SHBG"]["min_value"]: {"label": "min"},
+                        hormones_info["SHBG"]["max_value"]: {"label": "max"},
+                    },
+                    tooltip={
+                        "placement": "bottom",
+                        "always_visible": True,
+                        "style": {"fontSize": "30px"},
                     },
                 ),
             ],
             style={"width": "60%", "display": "inline-block"},
+            gap=3,
         ),
     ],
-    gap=3,
     body=True,
 )
 
@@ -322,22 +289,29 @@ app.layout = dbc.Container(
     Input("progesterone-slider", "value"),
     Input("LH-slider", "value"),
     Input("estrogen-slider", "value"),
+    Input("DHEAS-slider", "value"),
+    Input("SHBG-slider", "value"),
+    Input("FSH-slider", "value"),
     # Input("gest_week-slider", "value"),
 )
-def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
+def plot_hormone_levels_plotly(progesterone, FSH, LH, estrogen, SHBG, DHEAS):
     """Update the mesh plot based on the hormone levels."""
     progesterone = gs.array(progesterone)
+    FSH = gs.array(FSH)
     LH = gs.array(LH)
     estrogen = gs.array(estrogen)
-    # gest_week = gs.array(gest_week)
+    SHBG = gs.array(SHBG)
+    DHEAS = gs.array(DHEAS)
 
     # Predict Mesh
     X_multiple = gs.vstack(
         (
             progesterone,
             estrogen,
+            DHEAS,
             LH,
-            # gest_week,
+            FSH,
+            SHBG,
         )
     ).T
 

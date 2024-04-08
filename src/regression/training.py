@@ -227,7 +227,7 @@ def fit_linear_regression(y, X, return_p=False, X_df=None):  # , device = "cuda:
         lr.fit(X, y)
         intercept_hat, coef_hat = lr.intercept_, lr.coef_
 
-        p_values = calculate_p_values(original_X, original_y, lr)
+        percent_significant_p_values = calculate_p_values(original_X, original_y, lr)
 
     else:
         y = gs.array(y.reshape((len(X), -1)))
@@ -254,40 +254,61 @@ def fit_linear_regression(y, X, return_p=False, X_df=None):  # , device = "cuda:
     coef_hat = gs.array(coef_hat)
 
     if return_p:
-        return intercept_hat, coef_hat, lr, np.array(p_values)
+        return intercept_hat, coef_hat, lr, np.array(percent_significant_p_values)
     return intercept_hat, coef_hat, lr
 
 
-def stouffer_combination(p_value_matrix):
-    """Combine p-values using Stouffer's method.
+# def stouffer_combination(p_value_matrix):
+#     """Combine p-values using Stouffer's method.
+
+#     Parameters
+#     ----------
+#     p_value_matrix: matrix of p-values for one vertex, for one coefficient
+
+#     Returns
+#     -------
+#     combined_p_value: combined p-value for one coefficient
+#     """
+#     t_score_matrix = gs.array(norm.ppf(1 - np.array(p_value_matrix)))
+#     combined_t_score = gs.sum(t_score_matrix) / gs.sqrt(np.array(t_score_matrix).size)
+#     combined_p_value = 1 - norm.cdf(combined_t_score)
+#     return combined_p_value
+
+
+# def fisher_combination(p_value_matrix):
+#     """Combine p-values using Fisher's method.
+
+#     Note: i think there is an error in this method
+#     """
+#     t_score_matrix = gs.array(norm.ppf(1 - np.array(p_value_matrix)))
+#     chi_square = gs.sum(t_score_matrix**2)
+#     combined_p_value = 1 - norm.cdf(np.sqrt(chi_square))
+#     return combined_p_value.pvalue
+
+
+def percent_significant_p_values(p_values, alpha=0.05):
+    """Calculate the percentage of vertices that are significant.
 
     Parameters
     ----------
-    t_score: list of z-scores for one coefficient
-        (corresponding to one hormone)
-        shape: (num_vertices * 3, 1)
-    tails: number of tails for t-distribution (1 or 2)
+    p_values: list of p-values for each coefficient
+    alpha: significance level
 
     Returns
     -------
-    combined_p_value: combined p-value for one coefficient
+    percentage: percentage of p values that are significant
     """
-    t_score_matrix = gs.array(norm.ppf(1 - np.array(p_value_matrix)))
-    print("np.array(t_score_matrix).size", np.array(t_score_matrix).size)
-    combined_t_score = gs.sum(t_score_matrix) / gs.sqrt(np.array(t_score_matrix).size)
-    combined_p_value = 1 - norm.cdf(combined_t_score)
-    return combined_p_value
+    p_values_flat = p_values.flatten()
+    num_p_values = len(p_values_flat)
+    num_significant_values = 0
+    for i in range(num_p_values):
+        if p_values_flat[i] < alpha:
+            num_significant_values += 1
+    percentage = num_significant_values / num_p_values
+    return percentage
 
 
-def fisher_combination(p_value_matrix):
-    """Combine p-values using Fisher's method."""
-    t_score_matrix = gs.array(norm.ppf(1 - np.array(p_value_matrix)))
-    chi_square = gs.sum(t_score_matrix**2)
-    combined_p_value = 1 - norm.cdf(np.sqrt(chi_square))
-    return combined_p_value
-
-
-def calculate_p_values(X, y, lr, method="fisher", tails=2):
+def calculate_p_values(X, y, lr, method="stouffer", tails=2):
     """Calculate p-values for linear regression.
 
     Parameters
@@ -335,26 +356,59 @@ def calculate_p_values(X, y, lr, method="fisher", tails=2):
 
     print("lr.coef_: ", lr.coef_.shape)
     coef_hats = lr.coef_
-    coef_hats = coef_hats.reshape(num_hormones, num_vertices * 3)
+    coef_hats = coef_hats.reshape(num_hormones, num_vertices, 3)
     print("coefs.shape: ", coef_hats.shape)
 
-    p_values = []
+    percentage_significant_vertices_per_hormone = []
+    percentage_significant_components_per_hormone = []
     for i in range(num_hormones):
         t_value_matrix = coef_hats[i] / (sqrt_xtx_inv_diag_coef[i] * variance)
-        p_value_matrix = tails * (
-            1 - stats.t.cdf(np.abs(t_value_matrix), num_samples - num_hormones)
+        p_value_matrix = (
+            tails
+            * (1 - stats.t.cdf(np.abs(t_value_matrix), num_samples - num_hormones))
+            * num_vertices
+            * 3
         )
-        print("p_value_matrix median: ", np.median(p_value_matrix))
-        if method == "stouffer":
-            p_value = stouffer_combination(p_value_matrix)
-        elif method == "fisher":
-            p_value = fisher_combination(p_value_matrix)
-        p_values.append(p_value)
-    p_values = gs.array(p_values)
 
-    print("p_values: ", p_values)
+        num_significant_values = 0
+        for i_vertex in range(num_vertices):
+            vertex_p_value_matrix = p_value_matrix[i_vertex]
+            p_value = stats.combine_pvalues(vertex_p_value_matrix, method=method).pvalue
+            # if method is "stouffer":
+            #     p_value = stouffer_combination(vertex_p_value_matrix)
+            # elif method is "fisher":
+            #     p_value = fisher_combination(vertex_p_value_matrix)
+            # else:
+            #     raise ValueError("method must be 'stouffer' or 'fisher'")
+            if p_value < 0.05:
+                num_significant_values += 1
 
-    return p_values
+        percentage_significant_components = percent_significant_p_values(p_value_matrix)
+        percentage_significant_components_per_hormone.append(
+            percentage_significant_components
+        )
+
+        percentage_significant_vertices = num_significant_values / num_vertices
+        percentage_significant_vertices_per_hormone.append(
+            percentage_significant_vertices
+        )
+
+    percentage_significant_vertices_per_hormone = gs.array(
+        percentage_significant_vertices_per_hormone
+    )
+    percentage_significant_components_per_hormone = gs.array(
+        percentage_significant_components_per_hormone
+    )
+
+    print(
+        "percentage_significant_vertices_per_hormone: ",
+        percentage_significant_vertices_per_hormone,
+    )
+    print(
+        "percentage_significant_components_per_hormone: ",
+        percentage_significant_components_per_hormone,
+    )
+    return percentage_significant_vertices_per_hormone
 
     # t_values = []
     # for i in range(num_hormones):

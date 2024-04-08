@@ -418,7 +418,7 @@ def plotly_mesh_sequence(mesh_sequence_vertices):
 
 
 def benchmark_data_sequence(
-    space, sequence_1, sequence_2, sequence_3=None, sequence_4=None
+    space, sequence_1, sequence_2, sequence_3=None, sequence_4=None, axis_rotation=None
 ):
     """Compare two benchmark datasets.
 
@@ -500,6 +500,9 @@ def benchmark_data_sequence(
             s=size,
             label="True Geodesic",  # yellow
         )
+
+    if axis_rotation is not None and space.__class__.__name__ == "Hypersphere":
+        ax.view_init(azim=axis_rotation)
 
     ax.grid(False)
     plt.axis("off")

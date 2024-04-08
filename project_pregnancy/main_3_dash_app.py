@@ -122,7 +122,7 @@ sliders = dbc.Card(
             [
                 # html.H6(f"Progesterone ng/ml, p-value: {progesterone_p_value}"),
                 dbc.Label(
-                    f"Progesterone ng/ml, p-value: {progesterone_p_value:05f}",
+                    f"Progesterone ng/ml, % significant p-values: {progesterone_p_value:.2f}",
                     style={"font-size": 50},
                 ),
                 dcc.Slider(
@@ -143,7 +143,7 @@ sliders = dbc.Card(
                 ),
                 # html.H6(f"Estrogen pg/ml, p-value: {estrogen_p_value}"),
                 dbc.Label(
-                    f"Estrogen pg/ml, p-value: {estrogen_p_value:05f}",
+                    f"Estrogen pg/ml, % significant p-values: {estrogen_p_value:.2f}",
                     style={"font-size": 50},
                 ),
                 dcc.Slider(
@@ -164,7 +164,8 @@ sliders = dbc.Card(
                 ),
                 # html.H6(f"LH ng/ml, p-value: {lh_p_value}"),
                 dbc.Label(
-                    f"LH ng/ml, p-value: {lh_p_value:05f}", style={"font-size": 50}
+                    f"LH ng/ml, % significant p-values: {lh_p_value:.2f}",
+                    style={"font-size": 50},
                 ),
                 dcc.Slider(
                     id="LH-slider",
