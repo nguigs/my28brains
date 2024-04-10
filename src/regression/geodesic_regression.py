@@ -456,7 +456,7 @@ class GeodesicRegression(BaseEstimator):
         elif self.estimator == "PLS":
             # take a basis of the embedding space
             embedding_space_dim = self.space.embedding_space.dim
-            embedding_basis = gs.eye(embedding_space_dim)[: self.space.dim]
+            embedding_basis = gs.eye(embedding_space_dim)
             print("embedding_basis.shape", embedding_basis.shape)
             print("embedding_basis", embedding_basis)
             y_hat = self._model(X, tangent_vec, base_point)
@@ -471,32 +471,32 @@ class GeodesicRegression(BaseEstimator):
             for one_y, one_y_hat in zip(y, y_hat):
                 embedding_basis_in_tan_space = self.space.to_tangent(
                     embedding_basis, one_y
-                )
-                print(
-                    "embedding_basis_in_tan_space.shape",
-                    embedding_basis_in_tan_space.shape,
-                )
+                )[: self.space.dim]
+                # print(
+                #     "embedding_basis_in_tan_space.shape",
+                #     embedding_basis_in_tan_space.shape,
+                # )
 
                 U, s, V_trans = np.linalg.svd(embedding_basis_in_tan_space)
                 V = V_trans.T
                 rank = np.linalg.matrix_rank(embedding_basis_in_tan_space)
-                tan_space_basis = U[:, :rank]
+                # tan_space_basis = U[:, :rank]
                 null_space_basis = V[:, rank:]
-                print("tan_space_basis.shape", tan_space_basis.shape)
-                print("tan_space_basis", tan_space_basis)
-                print("null_space_basis.shape", null_space_basis.shape)
-                print("null_space_basis", null_space_basis)
+                # print("tan_space_basis.shape", tan_space_basis.shape)
+                # print("tan_space_basis", tan_space_basis)
+                # print("null_space_basis.shape", null_space_basis.shape)
+                # print("null_space_basis", null_space_basis)
 
                 orthogonal_basis = gs.array(null_space_basis)
                 AT_A = gs.matmul(orthogonal_basis.T, orthogonal_basis)
                 projection_matrix = gs.matmul(
                     gs.matmul(orthogonal_basis, AT_A.inverse()), orthogonal_basis.T
                 )
-                print("projection_matrix.shape", projection_matrix.shape)
+                # print("projection_matrix.shape", projection_matrix.shape)
 
-                print("one_y_hat.shape", one_y_hat.shape)
+                # print("one_y_hat.shape", one_y_hat.shape)
                 one_y_hat_perp_projected = gs.dot(projection_matrix, one_y_hat)
-                print("one_y_hat_perp_projected.shape", one_y_hat_perp_projected.shape)
+                # print("one_y_hat_perp_projected.shape", one_y_hat_perp_projected.shape)
                 y_hat_perp_projected.append(one_y_hat_perp_projected)
             y_hat_perp_projected = gs.array(y_hat_perp_projected)
             distances = gs.linalg.norm(y_hat_perp_projected - y) ** 2

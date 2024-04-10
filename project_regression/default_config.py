@@ -117,9 +117,9 @@ run_interpolate = False
 # Model 3: Projected Linear Noise
 # Model 4: Submersed Linear Noise
 
-model = 1  # 1, 2, 3, 4
+model = 3  # 1, 2, 3, 4
 
-if model == 1:  # TODO: hyperboloid LR all noise levels.
+if model == 1:
     linear_noise = False
     project_linear_noise = False
     dataset_name = [
@@ -127,7 +127,7 @@ if model == 1:  # TODO: hyperboloid LR all noise levels.
         "hypersphere",
     ]
     space_dimension = [2]  # [2, 3, 5, 10] hyperboloid GLS, LLS, Lin2015.
-if model == 2:  # only do for dim 2
+if model == 2:  # TODO: PLS
     linear_noise = True
     project_linear_noise = False
     dataset_name = [
@@ -135,7 +135,7 @@ if model == 2:  # only do for dim 2
         "hypersphere",
     ]
     space_dimension = [2]
-if model == 3:  # only do for dim 2
+if model == 3:  # TODO: PLS
     linear_noise = True
     project_linear_noise = True
     # Note that we only use hyperboloid and hypersphere data for this model
