@@ -53,8 +53,12 @@ def save_regression_results(
     regr_intercept: numpy array, the intercept calculated via regression
     regr_coef: numpy array, the slope calculated via regression
     model: linear regression or geodesic regression
-    linear_residuals: boolean, whether geodesic regression was performed
-        with linear residuals
+    estimator: string, the estimator used for regression
+        GLS: Geodesic Least Squares applied to geodesic regression
+        LLS: Linear Least Squares applied to geodesic regression
+        Lin2015: Linear Least Squares applied to linear regression, then projected to the manifold.
+        LR: Linear Regression
+        PLS: maximum likelihood estimator of projected linear noise model
     results_directory: string, the directory in which to save the results
     y_hat: numpy array, the y values predicted by the regression model.
     """
@@ -132,7 +136,7 @@ def fit_geodesic_regression(
     intercept_hat_guess,
     coef_hat_guess,
     initialization="warm_start",
-    linear_residuals=False,
+    estimator="GLS",
     compute_iterations=False,
     use_cuda=True,
     device_id=1,
@@ -156,8 +160,7 @@ def fit_geodesic_regression(
     intercept_hat: intercept of regression fit
     coef_hat: slope of regression fit
     """
-    # print(f"initialization: {initialization}")
-    # print(f"linear_residuals: {linear_residuals}")
+    print("estimator: ", estimator)
 
     # maxiter was 100
     # method was riemannian
@@ -169,7 +172,7 @@ def fit_geodesic_regression(
         verbose=True,
         tol=tol,
         initialization=initialization,
-        linear_residuals=linear_residuals,
+        estimator=estimator,
         use_cuda=use_cuda,
         device_id=device_id,
         embedding_space_dim=3 * len(y[0]),
