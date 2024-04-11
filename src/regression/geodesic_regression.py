@@ -26,6 +26,8 @@ import math
 import geomstats.backend as gs
 import geomstats.errors as error
 import numpy as np
+import scipy
+import sympy as sp
 import torch
 from geomstats.geometry.euclidean import Euclidean
 from geomstats.learning.frechet_mean import FrechetMean
@@ -241,7 +243,7 @@ class GeodesicRegression(BaseEstimator):
         compute_training_score=False,
         verbose=False,
         tol=1e-5,
-        linear_residuals=False,
+        estimator="GLS",
         compute_iterations=True,
         use_cuda=False,
         device_id=None,
@@ -278,7 +280,7 @@ class GeodesicRegression(BaseEstimator):
         self.mean_ = None
         self.training_score_ = None
 
-        self.linear_residuals = linear_residuals
+        self.estimator = estimator
         self.compute_iterations = compute_iterations
         if compute_iterations:
             self.n_iterations = (
@@ -449,15 +451,117 @@ class GeodesicRegression(BaseEstimator):
 
         tangent_vec = self.space.to_tangent(coef, base_point)
 
-        if self.linear_residuals:
+        if self.estimator == "LLS":
             distances = gs.linalg.norm(self._model(X, tangent_vec, base_point) - y) ** 2
-        else:
-            print("in loss function")
-            print("tangent_vec", tangent_vec)
-            print("base_point", base_point)
+        elif self.estimator == "PLS":
+            # take a basis of the embedding space
+            embedding_space_dim = self.space.embedding_space.dim
+            embedding_basis = gs.eye(embedding_space_dim)
+            print("embedding_basis.shape", embedding_basis.shape)
+            print("embedding_basis", embedding_basis)
+            y_hat = self._model(X, tangent_vec, base_point)
+
+            # SVD form of a matrix can be written A = U S V^T
+            # the column space of A is spanned by the first r columns of U
+            # (column space would be tangent space basis vectors in this case)
+            # The null space of A is spanned by the last n − r columns of V
+            # (null space would be the orthogonal basis of the tangent space in this case)
+            # source: https://faculty.sites.iastate.edu/jia/files/inline-files/svd.pdf
+            y_hat_perp_projected = []
+            for one_y, one_y_hat in zip(y, y_hat):
+                embedding_basis_in_tan_space = self.space.to_tangent(
+                    embedding_basis, one_y
+                )[: self.space.dim]
+                # print(
+                #     "embedding_basis_in_tan_space.shape",
+                #     embedding_basis_in_tan_space.shape,
+                # )
+
+                U, s, V_trans = np.linalg.svd(embedding_basis_in_tan_space)
+                V = V_trans.T
+                rank = np.linalg.matrix_rank(embedding_basis_in_tan_space)
+                # tan_space_basis = U[:, :rank]
+                null_space_basis = V[:, rank:]
+                # print("tan_space_basis.shape", tan_space_basis.shape)
+                # print("tan_space_basis", tan_space_basis)
+                # print("null_space_basis.shape", null_space_basis.shape)
+                # print("null_space_basis", null_space_basis)
+
+                orthogonal_basis = gs.array(null_space_basis)
+                AT_A = gs.matmul(orthogonal_basis.T, orthogonal_basis)
+                projection_matrix = gs.matmul(
+                    gs.matmul(orthogonal_basis, AT_A.inverse()), orthogonal_basis.T
+                )
+                # print("projection_matrix.shape", projection_matrix.shape)
+
+                # print("one_y_hat.shape", one_y_hat.shape)
+                one_y_hat_perp_projected = gs.dot(projection_matrix, one_y_hat)
+                # print("one_y_hat_perp_projected.shape", one_y_hat_perp_projected.shape)
+                y_hat_perp_projected.append(one_y_hat_perp_projected)
+            y_hat_perp_projected = gs.array(y_hat_perp_projected)
+            distances = gs.linalg.norm(y_hat_perp_projected - y) ** 2
+
+            # project y onto the orthogonal basis
+            # projection_matrix = gs.matmul(normalized_orthogonal_basis, normalized_orthogonal_basis.T)
+
+            # AT_A = gs.matmul(orthogonal_basis.T, orthogonal_basis)
+            # if AT_A.ndim == 1: # make inverse calculation a scalar inverse
+            #     AT_A_inv = 1/AT_A
+            #     print("A_AT_A_inv", A_AT_A_inv)
+            #     projection_matrix = gs.matmul(gs.matmul(orthogonal_basis, A_AT_A_inv), orthogonal_basis.T)
+            # else:
+            #     projection_matrix = gs.matmul(gs.matmul(orthogonal_basis, AT_A.inverse()), orthogonal_basis.T)
+
+            # # project the basis to the tangent space
+            # tangent_vecs = []
+            # for one_y in y:
+            #     tangent_vec = self.space.to_tangent(embedding_basis_vecs, one_y)
+            #     tangent_vecs.append(tangent_vec)
+            # tangent_vec_matrix = gs.array(tangent_vecs)
+            # print("tangent_vec_matrix.shape", tangent_vec_matrix.shape)
+
+            # # transform tangent vecs to the basis of the tangent space
+            # basis_vectors, _ = gs.linalg.qr(tangent_vec_matrix)
+            # print("basis_vectors.shape", basis_vectors.shape)
+            # print("basis_vectors", basis_vectors)
+
+            # # Normalize basis vectors (optional)
+            # basis_vectors_normalized = np.array(basis_vectors / gs.linalg.norm(basis_vectors, axis=0))
+
+            # # compute the basis vectors of the orthogonal space (TyM\perp)
+            # # orthogonal_basis = scipy.linalg.null_space(basis_vectors_normalized)
+            # U, s, V = np.linalg.svd(basis_vectors_normalized)
+            # rank = np.linalg.matrix_rank(basis_vectors_normalized)
+            # null_space_basis = V[rank:, :].T
+
+            # orthogonal_basis = null_space_basis
+            # print("orthogonal_basis.shape", orthogonal_basis.shape)
+
+            # if orthogonal_basis.shape == gs.zeros((self.space.dim, self.space.dim)).shape:
+            #     print("The orthogonal basis is the correct shape.")
+            # else:
+            #     raise ValueError("The orthogonal basis is not the correct shape.")
+
+            # # project y onto the orthogonal basis
+            # projection_matrix = gs.dot(gs.dot(orthogonal_basis, gs.dot(orthogonal_basis.T, orthogonal_basis).inverse()), orthogonal_basis.T)
+
+            # y_hat = self._model(X, tangent_vec, base_point)
+            # y_hat_perp_projected = gs.dot(projection_matrix, y_hat)
+
+            # embedding_basis_in_tan_space_sp = sp.Matrix(embedding_basis_in_tan_space)
+            # tangent_space_basis, _ = embedding_basis_in_tan_space_sp.rref()
+            # print("tangent_space_basis.shape", tangent_space_basis.shape)
+            # print("tangent_space_basis", tangent_space_basis)
+
+            # basis_vectors, _ = gs.linalg.qr(embedding_basis_in_tan_space)
+            # print("basis_vectors.shape", basis_vectors.shape)
+
+        elif self.estimator == "GLS":
             distances = self.space.metric.squared_dist(
                 self._model(X, tangent_vec, base_point), y
             )
+        else:
+            raise ValueError("Unknown estimator.")
 
         if weights is None:
             weights = 1.0

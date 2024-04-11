@@ -117,9 +117,9 @@ run_interpolate = False
 # Model 3: Projected Linear Noise
 # Model 4: Submersed Linear Noise
 
-model = 2  # 1, 2, 3, 4
+model = 3  # 1, 2, 3, 4
 
-if model == 1:  # TODO: hyperboloid LR all noise levels.
+if model == 1:
     linear_noise = False
     project_linear_noise = False
     dataset_name = [
@@ -127,7 +127,7 @@ if model == 1:  # TODO: hyperboloid LR all noise levels.
         "hypersphere",
     ]
     space_dimension = [2]  # [2, 3, 5, 10] hyperboloid GLS, LLS, Lin2015.
-if model == 2:  # only do for dim 2
+if model == 2:  # TODO: PLS
     linear_noise = True
     project_linear_noise = False
     dataset_name = [
@@ -135,7 +135,7 @@ if model == 2:  # only do for dim 2
         "hypersphere",
     ]
     space_dimension = [2]
-if model == 3:  # only do for dim 2
+if model == 3:  # TODO: PLS
     linear_noise = True
     project_linear_noise = True
     # Note that we only use hyperboloid and hypersphere data for this model
@@ -156,9 +156,9 @@ if model == 4:  # only do for dim 2
 # LLS: Linear Least Squares applied to geodesic regression
 # Lin2015: Linear Least Squares applied to linear regression, then projected to the manifold.
 if model == 2:
-    estimator = ["LLS", "Lin2015", "LR"]
+    estimator = ["PLS"]  # ["LLS", "Lin2015", "LR"]
 else:
-    estimator = ["GLS", "LLS", "Lin2015", "LR"]  # ["LR"]
+    estimator = ["PLS"]  # ["GLS", "LLS", "Lin2015", "LR"]
 
 n_steps = [3]  # n steps for the exp solver of geomstats. 3, 5
 synthetic_tan_vec_length = [

@@ -228,17 +228,17 @@ def main_run(config):
                 )
             estimator_y_prediction = gs.array(estimator_y_prediction)
 
-        elif wandb_config.estimator in ["GLS", "LLS"]:
+        elif wandb_config.estimator in ["GLS", "LLS", "PLS"]:
             logging.info(
                 f"\n- Geodesic Regression with {wandb_config.estimator} estimator."
             )
 
             if wandb_config.estimator == "GLS":
                 logging.info("Using GLS estimator.")
-                linear_residuals = False
+                # linear_residuals = False
             elif wandb_config.estimator == "LLS":
                 logging.info("Using LLS estimator.")
-                linear_residuals = True
+                # linear_residuals = True
 
             (
                 estimator_intercept_hat,
@@ -252,8 +252,11 @@ def main_run(config):
                 intercept_hat_guess=linear_intercept_hat,
                 coef_hat_guess=linear_coef_hat,
                 initialization="warm_start",
-                linear_residuals=linear_residuals,
+                estimator=wandb_config.estimator,
                 use_cuda=default_config.use_cuda,
+            )
+            logging.info(
+                f"Geodesic regression done with {wandb_config.estimator} estimator."
             )
 
             estimator_duration_time = time.time() - start_time
