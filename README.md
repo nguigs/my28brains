@@ -101,6 +101,8 @@ $ conda activate my28brains
 $ poetry install --no-root
 ```
 We use `--no-root` because we don't have a module named `my28brains`
+If you are on Mac, use `conda-osx-64.lock` instead.
+
 # Dev
 
 Only run if changes are made to the environment files.

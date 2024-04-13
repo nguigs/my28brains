@@ -9,40 +9,24 @@ Notes on Dash:
     to change the size of the title.
 """
 
-import itertools
 import os
 import random
-import subprocess
-import sys
 
-import dash
 import dash_bootstrap_components as dbc
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go  # or plotly.express as px
 from dash import Dash, Input, Output, callback, dcc, html
-
-# import meshplot as mp
-from IPython.display import clear_output, display
-from scipy.ndimage import gaussian_filter
-from scipy.spatial import KDTree
-from scipy.spatial.distance import cdist
 
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import geomstats.backend as gs
 
-import H2_SurfaceMatch.utils.input_output as h2_io
-import H2_SurfaceMatch.utils.utils
 import project_pregnancy.default_config as default_config
 import src.datasets.utils as data_utils
 import src.setcwd
 from H2_SurfaceMatch.utils.input_output import plotGeodesic
-from src.regression import check_euclidean, training
+from src.regression import training
 
 src.setcwd.main()
-
-os.environ["GEOMSTATS_BACKEND"] = "pytorch"
 
 # Multiple Linear Regression
 
