@@ -346,14 +346,12 @@ def load_real_data(config):
                 continue
 
             vertices, faces, vertex_colors = h2_io.loadData(mesh_path)
-            print(f"faces.shape: {faces.shape}")
             if vertices.shape[0] == 0:
                 print(f"Day {day} has no data. Skipping.")
                 print(f"DayID not to use: {day}")
                 days_to_ignore.append(day)
                 continue
             mesh_sequence_vertices.append(vertices)
-            print("vertices.shape ", vertices.shape)
             mesh_sequence_faces.append(faces)
         days_to_ignore = gs.array(days_to_ignore)
 
@@ -364,7 +362,6 @@ def load_real_data(config):
             raise ValueError("Meshes are not parameterized: not the same faces.")
 
     mesh_faces = gs.array(mesh_sequence_faces[0])
-    print(mesh_dir)
 
     space = DiscreteSurfaces(faces=mesh_faces)
     elastic_metric = ElasticMetric(
@@ -401,11 +398,7 @@ def load_real_data(config):
             day = int(day)
             hormones_df = hormones_df.drop(hormones_df[hormones_df["dayID"] == day].index).reset_index(drop=True)
             print("Hormones excluded from day: ", day)
-    print(hormones_df)
 
-    print(f"space faces: {space.faces.shape}")
-    print(f"mesh_sequence_vertices shape: {mesh_sequence_vertices.shape}")
-    print(f"hormones_df shape: {hormones_df.shape}")
 
     if project_config.dataset_name == "pregnancy_mesh":
         print("df index: ", hormones_df.index)

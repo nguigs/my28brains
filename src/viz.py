@@ -396,7 +396,9 @@ def plotly_mesh_sequence(mesh_sequence_vertices):
     mesh_sequence_vertices : np.array, shape=[n_X, n_vertices, 3]
         Sequence of meshes.
     """
-    plasma_cmap = px.colors.sequential.Plasma
+    #plasma_cmap = px.colors.sequential.Plasma
+    plasma_cmap = plt.cm.get_cmap("plasma")
+    len_sequence = len(mesh_sequence_vertices)
     data = []
 
     for i_mesh, mesh in enumerate(mesh_sequence_vertices):
@@ -407,7 +409,7 @@ def plotly_mesh_sequence(mesh_sequence_vertices):
                 z=mesh[:, 2],
                 mode="markers",
                 marker=dict(
-                    color=plasma_cmap[i_mesh], size=5, opacity=0.8, symbol="circle"
+                    color=plasma_cmap(i_mesh / len_sequence), size=5, opacity=0.8, symbol="circle"
                 ),
             )
         )
@@ -595,3 +597,61 @@ def scatterplot_evaluation(
     fig.update_traces(marker=dict(size=9, opacity=0.9))
     fig.show()
     return fig
+
+
+
+def median_smooth(y_pred, neighbors):
+    """
+    Smooth the vertices of a mesh using the median of neighboring vertices.
+
+    Parameters:
+        y_pred (np.ndarray): Array of shape (n_vertices, 3) containing the vertices of the mesh.
+        neighbors (list of lists): Each sublist contains the indices of the neighboring vertices for each vertex.
+
+    Returns:
+        np.ndarray: Array of shape (n_vertices, 3) containing the smoothed vertices of the mesh.
+    """
+    n_vertices = y_pred.shape[0]
+    y_smoothed = np.zeros_like(y_pred)
+
+    for i in range(n_vertices):
+        if len(neighbors[i]) == 0:
+            # If no neighbors, do not change the vertex
+            y_smoothed[i] = y_pred[i]
+        else:
+            # Gather all neighboring vertices
+            neighbor_vertices = y_pred[neighbors[i]]
+            # Compute the median along each coordinate
+            y_smoothed[i] = np.median(neighbor_vertices, axis=0)
+
+    return y_smoothed
+
+import numpy as np
+from sklearn.neighbors import NearestNeighbors
+
+def compute_neighbors(y_pred, k=5):
+    """
+    Compute the k-nearest neighbors for each vertex in a mesh based on 3D spatial data.
+
+    Parameters:
+        y_pred (np.ndarray): Array of shape (n_vertices, 3) containing the vertices of the mesh.
+        k (int): Number of neighbors to find for each vertex.
+
+    Returns:
+        list of lists: Each sublist contains the indices of the k nearest neighbors for each vertex.
+    """
+    # Initialize NearestNeighbors model
+    neigh = NearestNeighbors(n_neighbors=k+1, algorithm='auto').fit(y_pred)
+    
+    # Find k+1 nearest neighbors (including the point itself)
+    distances, indices = neigh.kneighbors(y_pred)
+    
+    # Create a list of lists for neighbor indices, excluding the point itself from its list of neighbors
+    neighbor_lists = [list(ind[1:]) for ind in indices]  # skip the first one as it is the point itself
+
+    return neighbor_lists
+
+# Example usage:
+# y_pred = np.random.rand(100, 3)  # random 3D points
+# neighbors = compute_neighbors(y_pred, k=5)
+
