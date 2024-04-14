@@ -43,6 +43,7 @@ The meshes in the .ply files can be opened with:
 - [MeshLab](https://www.meshlab.net/),
 - [Blender](https://www.blender.org/download/) with plugin [Stop-motion-OBJ].
 """
+
 import glob
 import itertools
 import multiprocessing

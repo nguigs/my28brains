@@ -13,8 +13,8 @@ import torch
 import trimesh
 from geomstats.geometry.discrete_surfaces import (
     DiscreteSurfaces,
-    ElasticMetric,
     DiscreteSurfacesExpSolver,
+    ElasticMetric,
 )
 
 import H2_SurfaceMatch.H2_match  # noqa: E402

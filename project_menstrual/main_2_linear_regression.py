@@ -5,6 +5,7 @@ Returns the slope and intercept of the regression fit.
 
 NOTE: is t = 0 the intercept? let's check this if things aren't working.
 """
+
 import datetime
 import itertools
 import logging
@@ -16,12 +17,12 @@ import numpy as np
 
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import geomstats.backend as gs
+import wandb
 from sklearn.preprocessing import PolynomialFeatures
 
 import project_menstrual.default_config as default_config
 import src.datasets.utils as data_utils
 import src.viz as viz
-import wandb
 from src.regression import check_euclidean, training
 
 regression_dir = default_config.regression_dir

@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+
 from H2_SurfaceMatch.enr.DDG import getVertAreas
 
 use_cuda = 1

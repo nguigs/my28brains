@@ -6,16 +6,15 @@ test:
 
 .PHONY: autoformat
 autoformat:
-	black my28brains
-	isort my28brains 
+	black .
+	isort .
 
 .PHONY: lint
 lint:
-	$(PYTHON) -m flake8 my28brains
-	$(PYTHON) -m black my28brains --check
+	$(PYTHON) -m flake8 .
+	$(PYTHON) -m black . --check
 	# Note that Bandit will look for .bandit file only if it's invoked with -r option.
-	$(PYTHON) -m bandit -c pyproject.toml -r my28brains --exit-zero
-	$(PYTHON) -m mypy --install-types --non-interactive
+	$(PYTHON) -m bandit -c pyproject.toml -r . --exit-zero
 
 .PHONY: clean
 clean:

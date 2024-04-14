@@ -10,8 +10,8 @@ import torch
 import trimesh
 from geomstats.geometry.discrete_surfaces import (
     DiscreteSurfaces,
-    ElasticMetric,
     DiscreteSurfacesExpSolver,
+    ElasticMetric,
 )
 from geomstats.geometry.euclidean import Euclidean
 from geomstats.geometry.hyperbolic import Hyperbolic
@@ -20,7 +20,6 @@ from geomstats.geometry.hypersphere import Hypersphere
 import H2_SurfaceMatch.utils.input_output as h2_io
 import src.datasets.synthetic as synthetic
 from src.import_project_config import import_default_config
-
 from src.regression.geodesic_regression import RiemannianGradientDescent
 
 
@@ -401,7 +400,8 @@ def load_real_data(config):
         config.use_cuda, n_vertices=len(true_intercept), max_iter=100, tol=1e-5
     )
     elastic_metric.exp_solver = DiscreteSurfacesExpSolver(
-        space=space, n_steps=config.n_steps, optimizer=optimizer)
+        space=space, n_steps=config.n_steps, optimizer=optimizer
+    )
     space.metric = elastic_metric
 
     y = mesh_sequence_vertices

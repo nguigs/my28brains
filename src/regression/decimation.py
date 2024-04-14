@@ -9,6 +9,7 @@ THEN
 REPEATS ABOVE STEPS UNTIL THE INTERCEPT IS CLOSE TO THE TRUE INTERCEPT.
 - Compares the regression results to the true slope and intercept of the mesh_sequence.
 """
+
 import os
 
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402

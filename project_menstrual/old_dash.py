@@ -21,7 +21,6 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go  # or plotly.express as px
 from dash import Dash, Input, Output, callback, dcc, html
-
 # import meshplot as mp
 from IPython.display import clear_output, display
 from scipy.ndimage import gaussian_filter
