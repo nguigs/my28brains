@@ -233,14 +233,6 @@ def update_mesh(
     # Plot Mesh
     faces = gs.array(space.faces).numpy()
 
-    x = y_pred_for_mr[:, 0]
-    y = y_pred_for_mr[:, 1]
-    z = y_pred_for_mr[:, 2]
-
-    i = faces[:, 0]
-    j = faces[:, 1]
-    k = faces[:, 2]
-
     if current_figure and "layout" in current_figure:
         layout = current_figure["layout"]
     else:
@@ -261,15 +253,15 @@ def update_mesh(
     fig = go.Figure(
         data=[
             go.Mesh3d(
-                x=x,
-                y=y,
-                z=z,
+                x=y_pred_for_mr[:, 0],
+                y=y_pred_for_mr[:, 1],
+                z=y_pred_for_mr[:, 2],
                 colorbar_title="z",
                 vertexcolor=vertex_colors,
                 # i, j and k give the vertices of triangles
-                i=i,
-                j=j,
-                k=k,
+                i=faces[:, 0],
+                j=faces[:, 1],
+                k=faces[:, 2],
                 name="y",
                 # showscale=True,
             )
