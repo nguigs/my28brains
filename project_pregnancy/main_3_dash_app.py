@@ -218,11 +218,8 @@ app.layout = dbc.Container(
     Input("LH-slider", "drag_value"),
     State("mesh-plot", "figure"),
     State("mesh-plot", "relayoutData"),
-    # Input("gest_week-slider", "value"),
 )
-def update_mesh(
-    progesterone, estrogen, LH, current_figure, relayoutData
-):  # , gest_week):
+def update_mesh(progesterone, estrogen, LH, current_figure, relayoutData):
     """Update the mesh plot based on the hormone levels."""
     # Predict Mesh
     X_multiple = gs.array([[progesterone, estrogen, LH]])
@@ -232,7 +229,6 @@ def update_mesh(
 
     # Plot Mesh
     faces = gs.array(space.faces).numpy()
-
     if current_figure and "layout" in current_figure:
         layout = current_figure["layout"]
     else:
