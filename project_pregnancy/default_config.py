@@ -51,7 +51,7 @@ blank_days = [15]
 
 project_dir = os.path.join(
     os.getcwd(), "project_pregnancy"
-)  # code/my28brains/project_regression/
+)
 src_dir = os.path.join(os.getcwd(), "src")
 h2_dir = os.path.join(os.getcwd(), "H2_SurfaceMatch")
 sys.path.append(code_dir)
@@ -94,7 +94,6 @@ area_thresholds = [0.00]  # 0.0001, 0.001, 0.01, 0.1, 1.0]
 i_template = 0
 template_day_index = 2
 
-# WORKING
 initial_decimation_fact = 10  # was 10
 scaling_factor = 2 * initial_decimation_fact
 
@@ -103,7 +102,6 @@ scaling_factor = 2 * initial_decimation_fact
 # - we have 10 gpus, so we can run 10 interpolations at once
 # - they contain most of the progesterone peak.
 # first menstrual cycle is day 1-30 (pre-pill)
-
 
 day_range = [1, 26]
 
@@ -120,7 +118,6 @@ train_test_split = 0.8  # 0.8
 use_cuda = False
 
 poly_degree = 3
-
 
 linear_residuals = [
     True,

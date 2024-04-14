@@ -23,7 +23,6 @@ import geomstats.backend as gs
 import project_pregnancy.default_config as default_config
 import src.datasets.utils as data_utils
 import src.setcwd
-from H2_SurfaceMatch.utils.input_output import plotGeodesic
 from src.regression import training
 
 src.setcwd.main()

@@ -13,7 +13,7 @@
 version: 1
 metadata:
   content_hash:
-    linux-64: ba090e95bdbf85e3eac3eccf0a70a29adc546345850e2ac7f39faea4060140b2
+    linux-64: 1bfb0e14426e5f383621717a6e608dfbe9dd52f786307e9c3f2fc3843964dee9
   channels:
   - url: defaults
     used_env_vars: []
@@ -1453,6 +1453,20 @@ package:
     sha256: 543fe5710ecf50274fd6a8ac77c7e9058d15c9daee0aec04e85c2509e5cff9ed
   category: main
   optional: false
+- name: pip
+  version: 23.3.1
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.11,<3.12.0a0'
+    setuptools: ''
+    wheel: ''
+  url: https://repo.anaconda.com/pkgs/main/linux-64/pip-23.3.1-py311h06a4308_0.tar.bz2
+  hash:
+    md5: aebee46c2eadf95ea8633847612f0f15
+    sha256: 0bedd7decde6751a3efbb2367dd22d916b61391e334833d548b285fdd3420080
+  category: main
+  optional: false
 - name: pkginfo
   version: 1.9.6
   manager: conda
@@ -1968,6 +1982,18 @@ package:
     sha256: 51bcea0e575a626f6ffbd16d1153330fda93dbe3dd31dcd3a8f469ff61dd1e4e
   category: main
   optional: false
+- name: setuptools
+  version: 68.2.2
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.11,<3.12.0a0'
+  url: https://repo.anaconda.com/pkgs/main/linux-64/setuptools-68.2.2-py311h06a4308_0.tar.bz2
+  hash:
+    md5: 86f5c1e109c9b35531a693b9c6f025b9
+    sha256: 6b87a3d61effa58d79a2da505767a14b407a20ede434d23959351af267e7a2e8
+  category: main
+  optional: false
 - name: shellingham
   version: 1.5.0
   manager: conda
@@ -2266,6 +2292,18 @@ package:
   hash:
     md5: 07dc61e2e59fe57a9bfe8efcbb23ffe6
     sha256: 7b505fdb5d801adfb3032e2541bf9bf17ed2238764b7a53cb845e33e7f835faf
+  category: main
+  optional: false
+- name: wheel
+  version: 0.41.2
+  manager: conda
+  platform: linux-64
+  dependencies:
+    python: '>=3.11,<3.12.0a0'
+  url: https://repo.anaconda.com/pkgs/main/linux-64/wheel-0.41.2-py311h06a4308_0.tar.bz2
+  hash:
+    md5: 9a75092954c0c7c5cc61b9a6ff27cbc8
+    sha256: 0384032ae4756c7ebcb0e52b9dbc21f4ef8a5d19fcc75909380ffe68bbecb46f
   category: main
   optional: false
 - name: xz
