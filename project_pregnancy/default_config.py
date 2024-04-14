@@ -106,6 +106,7 @@ scaling_factor = 2 * initial_decimation_fact
 day_range = [1, 26]
 
 # NOTE: hormone file is "28Baby_Hormones.csv"
+# that file is at /home/data/pregnancy/28Baby_Hormones.csv
 
 run_interpolate = False
 

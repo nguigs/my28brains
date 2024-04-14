@@ -14,7 +14,7 @@ import trimesh
 from geomstats.geometry.discrete_surfaces import (
     DiscreteSurfaces,
     ElasticMetric,
-    _ExpSolver,
+    DiscreteSurfacesExpSolver,
 )
 
 import H2_SurfaceMatch.H2_match  # noqa: E402
@@ -255,9 +255,9 @@ def generate_parameterized_mesh_geodesic(
     """
     project_dir = config.project_dir
     project_config = pc.import_default_config(project_dir)
-    SURFACE_SPACE = DiscreteSurfaces(faces=gs.array(start_mesh.faces))
-    METRIC = ElasticMetric(
-        space=SURFACE_SPACE,
+    space = DiscreteSurfaces(faces=gs.array(start_mesh.faces))
+    metric = ElasticMetric(
+        space=space,
         a0=project_config.a0,
         a1=project_config.a1,
         b1=project_config.b1,
@@ -265,7 +265,7 @@ def generate_parameterized_mesh_geodesic(
         d1=project_config.d1,
         a2=project_config.a2,
     )
-    METRIC.exp_solver = _ExpSolver(n_steps=n_steps)
+    metric.exp_solver = DiscreteSurfacesExpSolver(space=space, n_steps=n_steps)
     X = gs.arange(0, 1, 1 / n_X)
 
     initial_point = torch.tensor(start_mesh.vertices)
@@ -273,7 +273,7 @@ def generate_parameterized_mesh_geodesic(
     true_intercept = initial_point
     true_coef = initial_point - end_point
 
-    geodesic = METRIC.geodesic(
+    geodesic = metric.geodesic(
         initial_point=true_intercept, initial_tangent_vec=true_coef
     )
     print("Geodesic function created. Computing points along geodesic...")

@@ -11,7 +11,7 @@ import trimesh
 from geomstats.geometry.discrete_surfaces import (
     DiscreteSurfaces,
     ElasticMetric,
-    _ExpSolver,
+    DiscreteSurfacesExpSolver,
 )
 from geomstats.geometry.euclidean import Euclidean
 from geomstats.geometry.hyperbolic import Hyperbolic
@@ -19,7 +19,7 @@ from geomstats.geometry.hypersphere import Hypersphere
 
 import H2_SurfaceMatch.utils.input_output as h2_io
 import src.datasets.synthetic as synthetic
-import src.import_project_config as pc
+from src.import_project_config import import_default_config
 
 from src.regression.geodesic_regression import RiemannianGradientDescent
 
@@ -62,7 +62,7 @@ def load_synthetic_data(config):
         )
 
     project_dir = config.project_dir
-    project_config = pc.import_default_config(project_dir)
+    project_config = import_default_config(project_dir)
     if config.dataset_name == "synthetic_mesh":
         print("Using synthetic mesh data")
         data_dir = project_config.synthetic_data_dir
@@ -160,8 +160,8 @@ def load_synthetic_data(config):
         optimizer = get_optimizer(
             config.use_cuda, n_vertices=len(y_noiseless[0]), max_iter=100, tol=1e-5
         )
-        elastic_metric.exp_solver = _ExpSolver(
-            n_steps=config.n_steps, optimizer=optimizer
+        elastic_metric.exp_solver = DiscreteSurfacesExpSolver(
+            space=space, n_steps=config.n_steps, optimizer=optimizer
         )
         space.metric = elastic_metric
 
@@ -201,8 +201,8 @@ def load_synthetic_data(config):
         optimizer = get_optimizer(
             config.use_cuda, n_vertices=len(y_noiseless[0]), max_iter=100, tol=1e-5
         )
-        elastic_metric.exp_solver = _ExpSolver(
-            n_steps=config.n_steps, optimizer=optimizer
+        elastic_metric.exp_solver = DiscreteSurfacesExpSolver(
+            space=space, n_steps=config.n_steps, optimizer=optimizer
         )
         space.metric = elastic_metric
 
@@ -282,7 +282,7 @@ def load_real_data(config):
     """Load real brain meshes according to values in config file."""
     print(config)
     project_dir = config.project_dir
-    project_config = pc.import_default_config(project_dir)
+    project_config = import_default_config(project_dir)
 
     # load template day vertex colors
     # template_day_index = project_config.template_day_index
@@ -400,17 +400,17 @@ def load_real_data(config):
     optimizer = get_optimizer(
         config.use_cuda, n_vertices=len(true_intercept), max_iter=100, tol=1e-5
     )
-    elastic_metric.exp_solver = _ExpSolver(n_steps=config.n_steps, optimizer=optimizer)
+    elastic_metric.exp_solver = DiscreteSurfacesExpSolver(
+        space=space, n_steps=config.n_steps, optimizer=optimizer)
     space.metric = elastic_metric
 
     y = mesh_sequence_vertices
 
     if project_config.dataset_name == "menstrual_mesh":
-        # load all hormones
         hormones_path = os.path.join(project_config.data_dir, "hormones.csv")
         df = pd.read_csv(hormones_path, delimiter=",")
     if project_config.dataset_name == "pregnancy_mesh":
-        hormones_path = os.path.join(project_config.data_dir, "28Baby_Hormones.csv")
+        hormones_path = "/home/data/pregnancy/28Baby_Hormones.csv"
         df = pd.read_csv(hormones_path, delimiter=",")
         df["dayID"] = [int(entry.split("-")[1]) for entry in df["sessionID"]]
         df = df.drop(df[df["dayID"] == 27].index)  # sess 27 is a repeat of sess 26
@@ -463,7 +463,7 @@ def load_mesh(mesh_type, n_subdivisions, config):
     mesh_type : str, {"sphere", "ellipsoid", "pill", "cube"}
     """
     project_dir = config.project_dir
-    project_config = pc.import_default_config(project_dir)
+    project_config = import_default_config(project_dir)
     data_dir = project_config.synthetic_data_dir
     shape_dir = os.path.join(data_dir, f"{mesh_type}_subs{n_subdivisions}")
     vertices_path = os.path.join(shape_dir, "vertices.npy")
