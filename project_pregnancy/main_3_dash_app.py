@@ -15,7 +15,7 @@ import random
 import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.graph_objects as go  # or plotly.express as px
-from dash import Dash, Input, Output, callback, dcc, html
+from dash import Dash, Input, Output, callback, dcc, html, State
 
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import geomstats.backend as gs
@@ -28,10 +28,10 @@ from src.regression import training
 src.setcwd.main()
 
 # Multiple Linear Regression
-# Note: 
+# Note:
 # -true intercept is the first mesh after reparametrization
 # -true coef is the difference between the first two meshes after reparametrization
-# The reparameterization does not perform regression, thus they are not (neither true, not regression estimated) 
+# The reparameterization does not perform regression, thus they are not (neither true, not regression estimated)
 # intercept and coef
 
 (
@@ -74,7 +74,7 @@ X_multiple = gs.vstack(
     p_values,
 ) = training.fit_linear_regression(y, X_multiple, return_p=True)
 
-# NOTE (Nina): this is not really n_train 
+# NOTE (Nina): this is not really n_train
 # since we've just trained on the whole dataset
 n_train = int(default_config.train_test_split * n_meshes_in_sequence)
 
@@ -112,7 +112,7 @@ sliders = dbc.Card(
                 # html.H6(f"Progesterone ng/ml, p-value: {progesterone_p_value}"),
                 dbc.Label(
                     f"Progesterone ng/ml, % significant p-values: {progesterone_p_value:.2f}",
-                    style={"font-size": 50},
+                    style={"font-size": 30},
                 ),
                 dcc.Slider(
                     id="progesterone-slider",
@@ -133,7 +133,7 @@ sliders = dbc.Card(
                 # html.H6(f"Estrogen pg/ml, p-value: {estrogen_p_value}"),
                 dbc.Label(
                     f"Estrogen pg/ml, % significant p-values: {estrogen_p_value:.2f}",
-                    style={"font-size": 50},
+                    style={"font-size": 30},
                 ),
                 dcc.Slider(
                     id="estrogen-slider",
@@ -154,7 +154,7 @@ sliders = dbc.Card(
                 # html.H6(f"LH ng/ml, p-value: {lh_p_value}"),
                 dbc.Label(
                     f"LH ng/ml, % significant p-values: {lh_p_value:.2f}",
-                    style={"font-size": 50},
+                    style={"font-size": 30},
                 ),
                 dcc.Slider(
                     id="LH-slider",
@@ -213,34 +213,24 @@ app.layout = dbc.Container(
 
 @callback(
     Output("mesh-plot", "figure"),
-    Input("progesterone-slider", "value"),
-    Input("LH-slider", "value"),
-    Input("estrogen-slider", "value"),
+    Input("progesterone-slider", "drag_value"),
+    Input("estrogen-slider", "drag_value"),
+    Input("LH-slider", "drag_value"),
+    State("mesh-plot", "figure"),
+    State("mesh-plot", "relayoutData"),
     # Input("gest_week-slider", "value"),
 )
-def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
+def update_mesh(
+    progesterone, estrogen, LH, current_figure, relayoutData
+):  # , gest_week):
     """Update the mesh plot based on the hormone levels."""
-    progesterone = gs.array(progesterone)
-    LH = gs.array(LH)
-    estrogen = gs.array(estrogen)
-    # gest_week = gs.array(gest_week)
-
     # Predict Mesh
-    X_multiple = gs.vstack(
-        (
-            progesterone,
-            estrogen,
-            LH,
-            # gest_week,
-        )
-    ).T
-
-    X_multiple_predict = gs.array(X_multiple.reshape(len(X_multiple), -1))
-
-    y_pred_for_mr = mr.predict(X_multiple_predict)
+    X_multiple = gs.array([[progesterone, estrogen, LH]])
+    y_pred_for_mr = mr.predict(X_multiple)
     y_pred_for_mr = y_pred_for_mr.reshape([n_vertices, 3])
     # y_pred_for_mr = gaussian_smoothing(y_pred_for_mr, sigma=0.7)
 
+    # Plot Mesh
     faces = gs.array(space.faces).numpy()
 
     x = y_pred_for_mr[:, 0]
@@ -251,14 +241,22 @@ def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
     j = faces[:, 1]
     k = faces[:, 2]
 
-    layout = go.Layout(
-        margin=go.layout.Margin(
-            l=0,  # left margin
-            r=0,  # right margin
-            b=0,  # bottom margin
-            t=0,  # top margin
+    if current_figure and "layout" in current_figure:
+        layout = current_figure["layout"]
+    else:
+        layout = go.Layout(
+            margin=go.layout.Margin(
+                l=0,
+                r=0,
+                b=0,
+                t=0,
+            ),
+            width=1000,
+            height=1000,
+            scene=dict(
+                aspectmode="data", xaxis_title="x", yaxis_title="y", zaxis_title="z"
+            ),
         )
-    )
 
     fig = go.Figure(
         data=[
@@ -279,29 +277,15 @@ def plot_hormone_levels_plotly(progesterone, LH, estrogen):  # , gest_week):
         layout=layout,
     )
 
-    fig.update_layout(width=1000)
-    fig.update_layout(height=1000)
-
-    # rescale the axes to fit the shape
-    for axis in ["x", "y", "z"]:
-        fig.update_layout(scene=dict(aspectmode="data"))
-        fig.update_layout(scene=dict(xaxis_title="x", yaxis_title="y", zaxis_title="z"))
-
-    # Default parameters which are used when `layout.scene.camera` is not provided
-    # camera1 = dict(
-    #     up=dict(x=0, y=0, z=1),
-    #     center=dict(x=0, y=0, z=0),
-    #     eye=dict(x=2.5, y=-2.5, z=0.0),
-    # )
-
-    camera2 = dict(
-        up=dict(x=0, y=0, z=1), center=dict(x=0, y=0, z=0), eye=dict(x=0, y=0, z=2.5)
-    )
-
-    fig.update_layout(
-        scene_camera=camera2, margin=dict(l=0, r=0, b=0, t=0)
-    )  # margin=dict(l=0, r=0, b=0, t=0)
-
+    if relayoutData and ("scene.camera" in relayoutData):
+        scene_camera = relayoutData["scene.camera"]
+    else:
+        scene_camera = dict(
+            up=dict(x=0, y=0, z=1),
+            center=dict(x=0, y=0, z=0),
+            eye=dict(x=0, y=0, z=2.5),
+        )
+    fig.update_layout(scene_camera=scene_camera)
     return fig
 
 
