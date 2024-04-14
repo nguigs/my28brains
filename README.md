@@ -101,7 +101,7 @@ $ conda activate my28brains
 $ poetry install --no-root
 ```
 We use `--no-root` because we don't have a module named `my28brains`
-If you are on Mac, use `conda-osx-64.lock` instead.
+If you are on Mac, make and use `conda-osx-64.lock` instead.
 
 # Dev
 
@@ -112,6 +112,7 @@ To recreate the conda lock, after modifying conda.yaml:
 pip install conda-lock
 make conda-linux-64.lock
 ```
+Note that you may need to install conda-lock not in your base env.
 
 To recreate the poetry lock, after modifying pyproject.toml:
 ```shell

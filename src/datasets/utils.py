@@ -1,12 +1,10 @@
 """Utils to import data."""
 
 import glob
-import inspect
 import os
 
 import geomstats.backend as gs
 import numpy as np
-import open3d as o3d
 import pandas as pd
 import torch
 import trimesh
@@ -18,13 +16,11 @@ from geomstats.geometry.discrete_surfaces import (
 from geomstats.geometry.euclidean import Euclidean
 from geomstats.geometry.hyperbolic import Hyperbolic
 from geomstats.geometry.hypersphere import Hypersphere
-from geomstats.learning.frechet_mean import FrechetMean, variance
 
 import H2_SurfaceMatch.utils.input_output as h2_io
 import src.datasets.synthetic as synthetic
 import src.import_project_config as pc
 
-# from src.regression.discrete_surfaces import DiscreteSurfaces, ElasticMetric, _ExpSolver
 from src.regression.geodesic_regression import RiemannianGradientDescent
 
 
