@@ -49,9 +49,7 @@ raw_end_day = 26
 day_dirs = [os.path.join(raw_dir, f"BB{i:02d}") for i in range(1, raw_end_day + 1)]
 blank_days = [15]
 
-project_dir = os.path.join(
-    os.getcwd(), "project_pregnancy"
-)
+project_dir = os.path.join(os.getcwd(), "project_pregnancy")
 src_dir = os.path.join(os.getcwd(), "src")
 h2_dir = os.path.join(os.getcwd(), "H2_SurfaceMatch")
 sys.path.append(code_dir)

@@ -2,12 +2,13 @@
 import numpy as np
 import scipy
 import torch
+from scipy.optimize import fmin_l_bfgs_b, minimize
+from torch.autograd import grad
+
 import H2_SurfaceMatch.utils.utils as io
 from H2_SurfaceMatch.enr.DDG import computeBoundary
 from H2_SurfaceMatch.enr.H2 import *
 from H2_SurfaceMatch.H2_param import H2Midpoint
-from scipy.optimize import fmin_l_bfgs_b, minimize
-from torch.autograd import grad
 
 torch_dtype = torch.float64
 
@@ -292,7 +293,7 @@ def StandardH2Matching(source, target, geod, F_init, a0, a1, b1, c1, d1, a2, par
 
 
 def H2MultiRes(
-    source,  #[vertices, faces, colors]
+    source,  # [vertices, faces, colors]
     target,
     a0,
     a1,
@@ -341,7 +342,7 @@ def H2MultiRes(
         Faces describing the mesh, where each face is a set of 3 vertices' indices.
     """
     N = 2
-    [VS, FS, CS] = source  #[VS, FS, CS]
+    [VS, FS, CS] = source  # [VS, FS, CS]
     [VT, FT, CT] = target
 
     sources = [[VS, FS, CS]]
@@ -359,10 +360,14 @@ def H2MultiRes(
         print(f"FT decimation target: {int(FT.shape[0] / decimation_fact)}")
 
         # TODO: Add colors to the inputs and outputs of decimate
-        [VS, FS, CS] = io.decimate_mesh(VS, FS, int(FS.shape[0] / decimation_fact), colors = CS)  # was 4
+        [VS, FS, CS] = io.decimate_mesh(
+            VS, FS, int(FS.shape[0] / decimation_fact), colors=CS
+        )  # was 4
         # QUESTION: why do we decimate the mesh and then add it to the original sources?
         sources = [[VS, FS, CS]] + sources
-        [VT, FT, CT] = io.decimate_mesh(VT, FT, int(FT.shape[0] / decimation_fact), colors = CT)  # was 4
+        [VT, FT, CT] = io.decimate_mesh(
+            VT, FT, int(FT.shape[0] / decimation_fact), colors=CT
+        )  # was 4
         targets = [[VT, FT, CT]] + targets
         print(f"Resol {i}: Vertices and faces and colors for S then T")
         print(VS.shape, FS.shape, CS.shape)
@@ -398,19 +403,21 @@ def H2MultiRes(
         index = params["index"]
         geod = np.array(geod)
         [N, n, three] = geod.shape
-        geod, ener, Dic = SymmetricH2Matching( #Nina and i think this will not change colors because it will not change faces
-            sources[index],
-            targets[index],
-            geod,
-            F0,
-            a0,
-            a1,
-            b1,
-            c1,
-            d1,
-            a2,
-            params,
-            device=device,
+        geod, ener, Dic = (
+            SymmetricH2Matching(  # Nina and i think this will not change colors because it will not change faces
+                sources[index],
+                targets[index],
+                geod,
+                F0,
+                a0,
+                a1,
+                b1,
+                c1,
+                d1,
+                a2,
+                params,
+                device=device,
+            )
         )
         print(f"\n ############ Iteration {j}:")
         print("F0.shape", F0.shape)
@@ -418,7 +425,7 @@ def H2MultiRes(
         if time_steps > 2:
             # Note: here, geod is still an array.
             print("in timesteps:")
-            geod = H2Midpoint( # Nina and I think this will not change parameterization of each mesh, so it will not change colors
+            geod = H2Midpoint(  # Nina and I think this will not change parameterization of each mesh, so it will not change colors
                 geod, time_steps, F0, a0, a1, b1, c1, d1, a2, params, device=device
             )
             print("geod.shape:", geod.shape)
@@ -431,7 +438,9 @@ def H2MultiRes(
             for i in range(0, N):
                 print(f"iteration {i} in range(N) to subdivide mesh")
                 # Re upsampling by a factor of 4
-                geod_subi, F_Subi, color_Subi = io.subdivide_mesh(geod[i], F0, color = color0, order=1)# add colors by doing rho = colors\
+                geod_subi, F_Subi, color_Subi = io.subdivide_mesh(
+                    geod[i], F0, color=color0, order=1
+                )  # add colors by doing rho = colors\
                 F_Sub.append(F_Subi)
                 color_Sub.append()
                 geod_sub.append(geod_subi)
@@ -440,7 +449,7 @@ def H2MultiRes(
             color0 = color_Sub[0]
             print("len(geod):", len(geod))
     print(len(paramlist), F0.shape)
-    return geod, F0, color0 #F0 is faces, here, we need color0 too.
+    return geod, F0, color0  # F0 is faces, here, we need color0 too.
 
 
 def H2StandardIterative(

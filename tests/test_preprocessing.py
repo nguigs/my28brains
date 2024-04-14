@@ -9,10 +9,10 @@ Get the .npy files to test this code.
 import os
 
 import numpy as np
+from geomstats.geometry.discrete_surfaces import DiscreteSurfaces
 
 import my28brains.src.preprocessing as preprocessing
 
-from geomstats.geometry.discrete_surfaces import DiscreteSurfaces
 # from src.regression.discrete_surfaces import DiscreteSurfaces
 
 TESTS_DIR = os.path.join(os.getcwd(), "tests")

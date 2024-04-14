@@ -3,6 +3,7 @@ import os
 import numpy as np
 import open3d as o3d
 from scipy.io import loadmat, savemat
+
 from H2_SurfaceMatch.utils.utils import *
 
 ##############################################################################################################################
@@ -43,7 +44,7 @@ def loadData(file_name):
     # Load .ply file
     else:
         mesh = o3d.io.read_triangle_mesh(file_name)
-        V, F, Rho = getDataFromMesh(mesh) # here, Rho is color, not weights
+        V, F, Rho = getDataFromMesh(mesh)  # here, Rho is color, not weights
 
     return V, F, Rho
 
@@ -237,7 +238,7 @@ def plotGeodesic(
         F,
         source,
         target,
-        color = color,
+        color=color,
         offsetstep=offsetstep,
         stepsize=stepsize,
         axis=axis,

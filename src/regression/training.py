@@ -8,11 +8,9 @@ os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import inspect
 
 import geomstats.backend as gs
-
 # from ISLP.models import (ModelSpec as ms, summarize, poly)
 import pandas as pd
 from geomstats.geometry.discrete_surfaces import DiscreteSurfaces
-
 # import statsmodels.api as sm
 from scipy import stats
 from scipy.stats import norm
@@ -22,7 +20,6 @@ from sklearn.preprocessing import PolynomialFeatures
 from statsmodels.stats.multitest import multipletests
 
 import H2_SurfaceMatch.utils.input_output as h2_io  # noqa: E402
-
 # from src.regression.discrete_surfaces import DiscreteSurfaces
 from src.regression.geodesic_regression import GeodesicRegression
 

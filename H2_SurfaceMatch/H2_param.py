@@ -2,11 +2,12 @@
 import numpy as np
 import scipy
 import torch
+from scipy.optimize import fmin_l_bfgs_b, minimize
+from torch.autograd import grad
+
 import H2_SurfaceMatch.utils.utils as io
 from H2_SurfaceMatch.enr.DDG import computeBoundary
 from H2_SurfaceMatch.enr.H2 import *
-from scipy.optimize import fmin_l_bfgs_b, minimize
-from torch.autograd import grad
 
 torch_dtype = torch.float64
 

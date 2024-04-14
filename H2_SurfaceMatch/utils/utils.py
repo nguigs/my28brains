@@ -6,7 +6,7 @@ import open3d as o3d
 from scipy.io import loadmat, savemat
 
 
-def decimate_mesh(V, F, target, colors = None):
+def decimate_mesh(V, F, target, colors=None):
     """
     Decimates mesh given by V,F to have number of faces approximately equal to target
 
@@ -21,7 +21,7 @@ def decimate_mesh(V, F, target, colors = None):
     colors : np.ndarray
         Colors of the mesh. Expected to be of shape (n, 3).
     """
-    mesh = getMeshFromData([V, F], color = colors)
+    mesh = getMeshFromData([V, F], color=colors)
     mesh = mesh.simplify_quadric_decimation(target)  # does that keep the colors?
     VS = np.asarray(
         mesh.vertices, dtype=np.float64

@@ -1,9 +1,10 @@
 import numpy as np
 import torch
+from torch.autograd import grad
+
 from H2_SurfaceMatch.enr.DDG import *
 from H2_SurfaceMatch.enr.regularizers import *
 from H2_SurfaceMatch.enr.varifold import *
-from torch.autograd import grad
 
 ##############################################################################################################################
 # H2 Helper Functions

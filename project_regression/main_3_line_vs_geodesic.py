@@ -17,6 +17,7 @@ import time
 
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"
 import geomstats.backend as gs
+import wandb
 from geomstats.geometry.discrete_surfaces import (
     DiscreteSurfaces,
     ElasticMetric,
@@ -29,7 +30,6 @@ from geomstats.learning.frechet_mean import FrechetMean, variance
 import src.datasets.synthetic as synthetic
 import src.datasets.utils as data_utils
 import src.viz as viz
-import wandb
 
 NOISE_FACTORS = [0, 0.01, 0.1, 0.5, 1.0]  # [0.01, 0.1, 0.5, 1.0]
 N_STEPS = [1, 3, 5, 8, 10, 20]  # 3, 5, 8, 10, 20]  #

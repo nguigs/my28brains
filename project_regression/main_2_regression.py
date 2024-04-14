@@ -5,6 +5,7 @@ Returns the slope and intercept of the regression fit.
 
 NOTE: is t = 0 the intercept? let's check this if things aren't working.
 """
+
 import datetime
 import itertools
 import logging
@@ -16,11 +17,11 @@ import torch
 
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import geomstats.backend as gs
+import wandb
 
 import project_regression.default_config as default_config
 import src.datasets.utils as data_utils
 import src.viz as viz
-import wandb
 from src.regression import check_euclidean, training
 
 regression_dir = default_config.regression_dir
@@ -431,7 +432,7 @@ def main():
 
     This launches experiments with wandb with different config parameters.
     """
-    for (dataset_name, estimator, tol_factor, n_X, noise_factor) in itertools.product(
+    for dataset_name, estimator, tol_factor, n_X, noise_factor in itertools.product(
         default_config.dataset_name,
         default_config.estimator,
         default_config.tol_factor,
