@@ -69,12 +69,19 @@ def main_run(config):
 
         (
             space,
-            y,
+            mesh_sequence_vertices,
             all_hormone_levels,
-            true_intercept,
-            true_coef,
         ) = data_utils.load_real_data(wandb_config)
 
+        # It does not make sense to have "true_" for real data: we do not know
+        # what the ground truth is.
+        # NOTE (Nina): This is not the true intercept, this is the first mesh.
+        true_intercept = gs.array(mesh_sequence_vertices[0])
+        # NOTE (Nina): This is not the true coeff, 
+        # this is the difference between the first two meshes.
+        true_coef = gs.array(mesh_sequence_vertices[1] - mesh_sequence_vertices[0])
+
+        y = mesh_sequence_vertices
         X = all_hormone_levels[default_config.hormone_name].values
         print(X)
         print("X.shape, ", X.shape)

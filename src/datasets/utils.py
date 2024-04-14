@@ -283,26 +283,11 @@ def load_real_data(config):
     project_dir = config.project_dir
     project_config = import_default_config(project_dir)
 
-    # load template day vertex colors
-    # template_day_index = project_config.template_day_index
-    # template_day = template_day_index + 1
-    # meshed_dir = project_config.meshed_dir
-    # colors_path = os.path.join(
-    #     meshed_dir,
-    #     f"{project_config.hemispheres[0]}_structure_{project_config.structure_ids[0]}_day{template_day:02}_colors.npy",
-    # )
-    # vertex_colors = np.load(colors_path)
-
-    # # take off the opacity value, so that it is only RGB
-    # vertex_colors = vertex_colors[:, 0:3]
-    # print(vertex_colors)
-
-    # load meshes
     mesh_sequence_vertices = []
     mesh_sequence_faces = []
     if project_config.sort:
         days_to_ignore = None
-        print("Using menstrual mesh data (from progesterone sorted directory)")
+        print("Using mesh data from progesterone sorted directory")
         mesh_dir = project_config.sorted_dir
 
         sorted_hormone_levels_path = os.path.join(mesh_dir, "sorted_hormone_levels.npy")
@@ -329,9 +314,8 @@ def load_real_data(config):
                 mesh_sequence_vertices.append(vertices)
                 mesh_sequence_faces.append(faces)
     else:
-        print("Using menstrual mesh data (from reparameterized directory)")
+        print("Using mesh data from (unsorted) reparameterized directory")
         mesh_dir = project_config.reparameterized_dir
-        # mesh_dir = project_config.nondegenerate_dir
 
         # make sure there are meshes in the directory
         mesh_string_base = os.path.join(
@@ -375,15 +359,11 @@ def load_real_data(config):
 
     mesh_sequence_vertices = gs.array(mesh_sequence_vertices)
 
-    # parameterized = all(
-    # faces == mesh_sequence_faces[0] for faces in mesh_sequence_faces)
     for faces in mesh_sequence_faces:
         if (faces != mesh_sequence_faces[0]).all():
-            raise ValueError("Meshes are not parameterized")
+            raise ValueError("Meshes are not parameterized: not the same faces.")
 
     mesh_faces = gs.array(mesh_sequence_faces[0])
-    true_intercept = gs.array(mesh_sequence_vertices[0])
-    true_coef = gs.array(mesh_sequence_vertices[1] - mesh_sequence_vertices[0])
     print(mesh_dir)
 
     space = DiscreteSurfaces(faces=mesh_faces)
@@ -397,60 +377,52 @@ def load_real_data(config):
         a2=project_config.a2,
     )
     optimizer = get_optimizer(
-        config.use_cuda, n_vertices=len(true_intercept), max_iter=100, tol=1e-5
+        config.use_cuda, n_vertices=len(mesh_sequence_vertices[0]), max_iter=100, tol=1e-5
     )
     elastic_metric.exp_solver = DiscreteSurfacesExpSolver(
         space=space, n_steps=config.n_steps, optimizer=optimizer
     )
     space.metric = elastic_metric
 
-    y = mesh_sequence_vertices
-
     if project_config.dataset_name == "menstrual_mesh":
         hormones_path = os.path.join(project_config.data_dir, "hormones.csv")
-        df = pd.read_csv(hormones_path, delimiter=",")
+        hormones_df = pd.read_csv(hormones_path, delimiter=",")
     if project_config.dataset_name == "pregnancy_mesh":
         hormones_path = "/home/data/pregnancy/28Baby_Hormones.csv"
-        df = pd.read_csv(hormones_path, delimiter=",")
-        df["dayID"] = [int(entry.split("-")[1]) for entry in df["sessionID"]]
-        df = df.drop(df[df["dayID"] == 27].index)  # sess 27 is a repeat of sess 26
+        hormones_df = pd.read_csv(hormones_path, delimiter=",")
+        hormones_df["dayID"] = [int(entry.split("-")[1]) for entry in hormones_df["sessionID"]]
+        hormones_df = hormones_df.drop(hormones_df[hormones_df["dayID"] == 27].index)  # sess 27 is a repeat of sess 26
         # df = df[df["dayID"] != 27]  # sess 27 is a repeat of sess 26
 
-    df = df[df["dayID"] < project_config.day_range[1] + 1]
-    df = df[df["dayID"] > project_config.day_range[0] - 1]
+    hormones_df = hormones_df[hormones_df["dayID"] < project_config.day_range[1] + 1]
+    hormones_df = hormones_df[hormones_df["dayID"] > project_config.day_range[0] - 1]
     if days_to_ignore is not None:
         for day in days_to_ignore:
             day = int(day)
-            df = df.drop(df[df["dayID"] == day].index).reset_index(drop=True)
+            hormones_df = hormones_df.drop(hormones_df[hormones_df["dayID"] == day].index).reset_index(drop=True)
             print("Hormones excluded from day: ", day)
-    print(df)
+    print(hormones_df)
 
     print(f"space faces: {space.faces.shape}")
-    print(f"y shape: {y.shape}")
-    print(f"X shape: {df.shape}")
-    print(f"true intercept shape: {true_intercept.shape}")
-    print(f"true coef shape: {true_coef.shape}")
+    print(f"mesh_sequence_vertices shape: {mesh_sequence_vertices.shape}")
+    print(f"hormones_df shape: {hormones_df.shape}")
 
     if project_config.dataset_name == "pregnancy_mesh":
-        print("df index: ", df.index)
-        missing_days = df[df.isnull().any(axis=1)].index
+        print("df index: ", hormones_df.index)
+        missing_days = hormones_df[hormones_df.isnull().any(axis=1)].index
         print(f"Missing days: {missing_days}")
 
         # Remove rows with missing hormone values from the dataframe
-        df = df.dropna()
+        hormones_df = hormones_df.dropna()
 
         # Remove corresponding brain meshes from the array
-        y = np.delete(y, missing_days, axis=0)
+        mesh_sequence_vertices = np.delete(mesh_sequence_vertices, missing_days, axis=0)
 
     print(f"space faces: {space.faces.shape}")
-    print(f"y shape: {y.shape}")
-    print(f"X shape: {df.shape}")
-    print(f"true intercept shape: {true_intercept.shape}")
-    print(f"true coef shape: {true_coef.shape}")
+    print(f"mesh_sequence_vertices shape: {mesh_sequence_vertices.shape}")
+    print(f"hormones_df shape: {hormones_df.shape}")
 
-    all_hormone_levels = df
-
-    return space, y, vertex_colors, all_hormone_levels, true_intercept, true_coef
+    return space, mesh_sequence_vertices, vertex_colors, hormones_df
 
 
 def load_mesh(mesh_type, n_subdivisions, config):
@@ -494,23 +466,4 @@ def mesh_diameter(mesh_vertices):
     return max_distance
 
 
-# def add_noise(mesh_sequence_vertices, noise_factor):
-#     """Add noise to mesh_sequence_vertices.
 
-#     Note that this function modifies the input mesh_sequence_vertices,
-#     which is overwritten by its noisy version.
-
-#     For example, after running:
-#     noisy_mesh = data_utils.add_noise(
-#         mesh_sequence_vertices=[mesh],
-#         noise_factor=10
-#     )
-#     the mesh has become noisy_mesh as well.
-#     """
-#     diameter = mesh_diameter(mesh_sequence_vertices[0])
-#     noise_sd = noise_factor * diameter
-#     for i_mesh in range(len(mesh_sequence_vertices)):
-#         mesh_sequence_vertices[i_mesh] += gs.random.normal(
-#             loc=0.0, scale=noise_sd, size=mesh_sequence_vertices[i_mesh].shape
-#         )
-#     return mesh_sequence_vertices

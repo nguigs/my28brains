@@ -28,34 +28,28 @@ from src.regression import training
 src.setcwd.main()
 
 # Multiple Linear Regression
+# Note: 
+# -true intercept is the first mesh after reparametrization
+# -true coef is the difference between the first two meshes after reparametrization
+# The reparameterization does not perform regression, thus they are not (neither true, not regression estimated) 
+# intercept and coef
 
 (
     space,
-    y,
+    mesh_sequence_vertices,
     vertex_colors,
-    all_hormone_levels,
-    true_intercept,
-    true_coef,
+    hormones_df,
 ) = data_utils.load_real_data(default_config)
 
-n_vertices = len(y[0])
+n_vertices = len(mesh_sequence_vertices[0])
+n_meshes_in_sequence = len(mesh_sequence_vertices)
 faces = gs.array(space.faces).numpy()
-
-n_train = int(default_config.train_test_split * len(y))
-
-X_indices = np.arange(len(y))
-# Shuffle the array to get random values
-random.shuffle(X_indices)
-train_indices = X_indices[:n_train]
-train_indices = np.sort(train_indices)
-test_indices = X_indices[n_train:]
-test_indices = np.sort(test_indices)
 
 # TODO: instead, save these values in main_2, and then load them here. or, figure out how to predict the mesh using just the intercept and coef learned here, and then load them.
 
-progesterone_levels = gs.array(all_hormone_levels["prog"].values)
-estrogen_levels = gs.array(all_hormone_levels["estro"].values)
-lh_levels = gs.array(all_hormone_levels["lh"].values)
+progesterone_levels = gs.array(hormones_df["prog"].values)
+estrogen_levels = gs.array(hormones_df["estro"].values)
+lh_levels = gs.array(hormones_df["lh"].values)
 # gest_week = gs.array(all_hormone_levels["gestWeek"].values)
 
 progesterone_average = gs.mean(progesterone_levels)
@@ -63,6 +57,7 @@ estrogen_average = gs.mean(estrogen_levels)
 lh_average = gs.mean(lh_levels)
 # gest_week_average = gs.mean(gest_week)
 
+y = gs.array(mesh_sequence_vertices)
 X_multiple = gs.vstack(
     (
         progesterone_levels,
@@ -79,6 +74,17 @@ X_multiple = gs.vstack(
     p_values,
 ) = training.fit_linear_regression(y, X_multiple, return_p=True)
 
+# NOTE (Nina): this is not really n_train 
+# since we've just trained on the whole dataset
+n_train = int(default_config.train_test_split * n_meshes_in_sequence)
+
+X_indices = np.arange(n_meshes_in_sequence)
+# Shuffle the array to get random values
+random.shuffle(X_indices)
+train_indices = X_indices[:n_train]
+train_indices = np.sort(train_indices)
+test_indices = X_indices[n_train:]
+test_indices = np.sort(test_indices)
 mr_score_array = training.compute_R2(y, X_multiple, test_indices, train_indices)
 
 # hormone p values
