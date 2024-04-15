@@ -55,18 +55,13 @@ n_components = 4  # Adjust based on variance explanation
 pca = PCA(n_components=n_components)
 y_pca = pca.fit_transform(y)
 explained_var = np.sum(pca.explained_variance_ratio_)
-print(
-    f"Cumul. variance explained w/ {n_components} components: {explained_var}"
-)
+print(f"Cumul. variance explained w/ {n_components} components: {explained_var}")
 
 lr = LinearRegression()
 lr.fit(X, y_pca)
 y_pca_pred = lr.predict(X)
 r2 = r2_score(y_pca, y_pca_pred)
-adjusted_r2 = 1 - (1 - r2) * (n_meshes - 1) / (
-        n_meshes - n_hormones - 1
-    )
-
+adjusted_r2 = 1 - (1 - r2) * (n_meshes - 1) / (n_meshes - n_hormones - 1)
 print(f"Adjusted R2 score (adjusted for several inputs): {adjusted_r2:.2f}")
 
 # # NOTE (Nina): this is not really n_train
@@ -107,71 +102,58 @@ hormones_info = {
 }
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+banner = [
+    html.Div(style={"height": "20px"}),
+    html.Img(
+        src="assets/herbrain_logo_text.png",
+        style={
+            "width": "80%",
+            "height": "auto",
+            "marginLeft": "10px",
+            "marginRight": "10px",
+        },
+    ),
+    html.Hr(),
+]
+
+def hormone_slider(hormone_name):
+    return dcc.Slider(
+        id=f"{hormone_name}-slider",
+        min=hormones_info[hormone_name]["min_value"],
+        max=hormones_info[hormone_name]["max_value"],
+        step=hormones_info[hormone_name]["step"],
+        value=hormones_info[hormone_name]["mean_value"],
+        marks={
+            hormones_info[hormone_name]["min_value"]: {"label": "min"},
+            hormones_info[hormone_name]["max_value"]: {"label": "max"},
+        },
+        tooltip={
+            "placement": "bottom",
+            "always_visible": True,
+            "style": {"fontSize": "30px"},
+        },
+    )
+
 
 sliders = dbc.Card(
     [
         dbc.Stack(
             [
                 dbc.Label(
-                    f"Estrogen pg/ml, % significant p-values: {estrogen_p_value:.2f}",
+                    f"Estrogen pg/ml",
                     style={"font-size": 30},
                 ),
-                dcc.Slider(
-                    id="estrogen-slider",
-                    min=hormones_info["estrogen"]["min_value"],
-                    max=hormones_info["estrogen"]["max_value"],
-                    step=hormones_info["estrogen"]["step"],
-                    value=hormones_info["estrogen"]["mean_value"],
-                    marks={
-                        hormones_info["estrogen"]["min_value"]: {"label": "min"},
-                        hormones_info["estrogen"]["max_value"]: {"label": "max"},
-                    },
-                    tooltip={
-                        "placement": "bottom",
-                        "always_visible": True,
-                        "style": {"fontSize": "30px"},
-                    },
-                ),
+                hormone_slider("estrogen"),
                 dbc.Label(
-                    f"Progesterone ng/ml, % significant p-values: {progesterone_p_value:.2f}",
+                    f"Progesterone ng/ml",
                     style={"font-size": 30},
                 ),
-                dcc.Slider(
-                    id="progesterone-slider",
-                    min=hormones_info["progesterone"]["min_value"],
-                    max=hormones_info["progesterone"]["max_value"],
-                    step=hormones_info["progesterone"]["step"],
-                    value=hormones_info["progesterone"]["mean_value"],
-                    marks={
-                        hormones_info["progesterone"]["min_value"]: {"label": "min"},
-                        hormones_info["progesterone"]["max_value"]: {"label": "max"},
-                    },
-                    tooltip={
-                        "placement": "bottom",
-                        "always_visible": True,
-                        "style": {"fontSize": "30px"},
-                    },
-                ),
+                hormone_slider("progesterone"),
                 dbc.Label(
-                    f"LH ng/ml, % significant p-values: {lh_p_value:.2f}",
+                    f"LH ng/ml",
                     style={"font-size": 30},
                 ),
-                dcc.Slider(
-                    id="LH-slider",
-                    min=hormones_info["LH"]["min_value"],
-                    max=hormones_info["LH"]["max_value"],
-                    step=hormones_info["LH"]["step"],
-                    value=hormones_info["LH"]["mean_value"],
-                    marks={
-                        hormones_info["LH"]["min_value"]: {"label": "min"},
-                        hormones_info["LH"]["max_value"]: {"label": "max"},
-                    },
-                    tooltip={
-                        "placement": "bottom",
-                        "always_visible": True,
-                        "style": {"fontSize": "30px"},
-                    },
-                ),
+                hormone_slider("LH"),
             ],
             gap=3,
         ),
@@ -179,14 +161,69 @@ sliders = dbc.Card(
     body=True,
 )
 
+
 app.layout = dbc.Container(
     [
-        html.H1("Brain Shape Prediction with Hormones, Pregnancy"),
-        html.Hr(),
+        *banner,
         dbc.Row(
             [
-                dbc.Col(sliders, md=6),
-                dbc.Col(dcc.Graph(id="mesh-plot"), md=6),
+                dbc.Col(
+                    html.Img(
+                        src="assets/herbrain.png",
+                        style={"width": "100%", "height": "auto"},
+                    ),
+                    md=4,
+                ),
+                dbc.Col(
+                    html.P(
+                        [
+                            "The hippocampus and the structures around it are particularly sensitives to hormones.",
+                            html.Br(),
+                            html.Br(),
+                            "In pregnancy, the rise in sex hormone levels during gestation is known to impact hippocampal plasticity in rodents.",
+                            html.Br(),
+                            "Scientists have hypothesized that sex hormones drive the decline in hippocampal volume that occurs during pregnancy in humans.",
+                            html.Br(),
+                            html.Br(),
+                            "This application predicts shows the shape changes occuring in the brain during pregnancy based on hormone levels.",
+                        ],
+                        style={"fontSize": "20px"},
+                    ),
+                    md=8,
+                ),
+            ],
+            align="center",
+            style={"marginLeft": "10px", "marginRight": "10px"},
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Row(
+                            html.P(
+                                [
+                                    "The main sex hormones at play during pregnancy are: Estrogen, Progesterone and LH.",
+                                    html.Br(),
+                                    html.Br(),
+                                    "Estrogen supports the growth and function of the uterus,"
+                                    " for fetal development and stimulating maternal organs to accommodate pregnancy",
+                                    html.Br(),
+                                    "Progesterone maintains the uterine lining for implantation of the embryo and supports placental function.",
+                                    html.Br(),
+                                    "LH is crucial for triggering ovulation and "
+                                    "supports the early stages of pregnancy until the placenta is fully formed.",
+                                    html.Br(),
+                                    html.Br(),
+                                    "Use the sliders to adjust the hormone levels and observe how the predicted brain shape changes accordingly.",
+                                ],
+                                style={"fontSize": "20px"},
+                            )
+                        ),
+                        dbc.Row(sliders),
+                    ],
+                    md=7,
+                ),
+                dbc.Col(dcc.Graph(id="mesh-plot"), md=5),
             ],
             align="center",
         ),
@@ -223,8 +260,8 @@ def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
                 b=0,
                 t=0,
             ),
-            width=1000,
-            height=1000,
+            width=800,
+            height=800,
             scene=dict(
                 aspectmode="data", xaxis_title="x", yaxis_title="y", zaxis_title="z"
             ),
