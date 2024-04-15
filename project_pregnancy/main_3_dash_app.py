@@ -14,7 +14,7 @@ import random
 
 import dash_bootstrap_components as dbc
 import numpy as np
-import plotly.graph_objects as go  # or plotly.express as px
+import plotly.graph_objects as go
 from dash import Dash, Input, Output, callback, dcc, html, State
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
@@ -26,6 +26,7 @@ import geomstats.backend as gs
 import project_pregnancy.default_config as default_config
 import src.datasets.utils as data_utils
 import src.setcwd
+from src.preprocessing import smoothing
 from src.regression import training
 
 src.setcwd.main()
@@ -38,7 +39,14 @@ src.setcwd.main()
 ) = data_utils.load_real_data(default_config)
 # Do not include postpartum values that are too low
 hormones_df = hormones_df[hormones_df["EndoStatus"] == "Pregnant"]
-mesh_sequence_vertices = mesh_sequence_vertices[:9]
+mesh_sequence_vertices = mesh_sequence_vertices[
+    :9
+]  # HACKALART: first 9 meshes are pregnancy
+mean_mesh = mesh_sequence_vertices.mean(axis=0)
+
+# Compute neighbors once and for all from the mean mesh
+k_neighbors = 10
+mesh_neighbors = smoothing.compute_neighbors(mean_mesh, k=k_neighbors)
 
 n_meshes, n_vertices, _ = mesh_sequence_vertices.shape
 
@@ -51,7 +59,7 @@ y_mean = y.mean(axis=0)
 y = y - y_mean
 
 # Define the number of principal components
-n_components = 4  # Adjust based on variance explanation
+n_components = 4  # Adjust based on variance explanation: see notebook 02
 pca = PCA(n_components=n_components)
 y_pca = pca.fit_transform(y)
 explained_var = np.sum(pca.explained_variance_ratio_)
@@ -244,6 +252,7 @@ def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
 
     y_pred = pca.inverse_transform(y_pca_pred) + y_mean.numpy()
     mesh_pred = y_pred.reshape(n_vertices, 3)
+    mesh_pred = smoothing.median_smooth(mesh_pred, mesh_neighbors)
 
     # Plot Mesh
     if current_figure and "layout" in current_figure:
