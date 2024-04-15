@@ -116,6 +116,32 @@ banner = [
     html.Hr(),
 ]
 
+margin_side = "20px"
+text_fontsize = "24px"
+text_fontfamily = "Avenir"
+intro_text = html.P(
+    [
+        html.Br(),
+        "The hippocampus and the structures around it are particularly sensitives to hormones.",
+        html.Br(),
+        html.Br(),
+        "In pregnancy, sex hormones are believe to drive the decline in hippocampal volume that occurs during gestation.",
+        html.Br(),
+        html.Br(),
+        "This application predicts the shape changes occuring in the hippocampus during pregnancy based on hormone levels.",
+    ],
+    style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+)
+img_herbrain = html.Img(
+    src="assets/herbrain.png",
+    style={"width": "100%", "height": "auto"},
+)
+intro_text_row = dbc.Row(
+    [dbc.Col(img_herbrain, md=4), dbc.Col(md=1), dbc.Col(intro_text, md=7)],
+    style={"marginLeft": margin_side, "marginRight": margin_side},
+)
+
+
 def hormone_slider(hormone_name):
     return dcc.Slider(
         id=f"{hormone_name}-slider",
@@ -130,103 +156,73 @@ def hormone_slider(hormone_name):
         tooltip={
             "placement": "bottom",
             "always_visible": True,
-            "style": {"fontSize": "30px"},
+            "style": {"fontSize": "30px", "fontFamily": text_fontfamily},
         },
     )
 
 
-sliders = dbc.Card(
+sliders_card = dbc.Card(
     [
         dbc.Stack(
             [
                 dbc.Label(
                     f"Estrogen pg/ml",
-                    style={"font-size": 30},
+                    style={"font-size": 30, "fontFamily": text_fontfamily},
                 ),
                 hormone_slider("estrogen"),
                 dbc.Label(
                     f"Progesterone ng/ml",
-                    style={"font-size": 30},
+                    style={"font-size": 30, "fontFamily": text_fontfamily},
                 ),
                 hormone_slider("progesterone"),
                 dbc.Label(
-                    f"LH ng/ml",
-                    style={"font-size": 30},
+                    f"LH ng/ml", style={"font-size": 30, "fontFamily": text_fontfamily}
                 ),
                 hormone_slider("LH"),
             ],
             gap=3,
-        ),
+        )
     ],
     body=True,
 )
 
+sliders_column = [
+    dbc.Row(
+        html.P(
+            [
+                html.Br(),
+                "Use the sliders to adjust the hormone levels and observe the shape changes.",
+            ],
+            style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+        )
+    ),
+    dbc.Row(sliders_card),
+]
 
 app.layout = dbc.Container(
     [
         *banner,
+        intro_text_row,
         dbc.Row(
             [
                 dbc.Col(
-                    html.Img(
-                        src="assets/herbrain.png",
-                        style={"width": "100%", "height": "auto"},
+                    html.Div(
+                        dcc.Graph(id="mesh-plot"),
+                        style={"paddingTop": "-20px"},  # Adjust the padding top style
                     ),
                     md=4,
                 ),
-                dbc.Col(
-                    html.P(
-                        [
-                            "The hippocampus and the structures around it are particularly sensitives to hormones.",
-                            html.Br(),
-                            html.Br(),
-                            "In pregnancy, the rise in sex hormone levels during gestation is known to impact hippocampal plasticity in rodents.",
-                            html.Br(),
-                            "Scientists have hypothesized that sex hormones drive the decline in hippocampal volume that occurs during pregnancy in humans.",
-                            html.Br(),
-                            html.Br(),
-                            "This application predicts shows the shape changes occuring in the brain during pregnancy based on hormone levels.",
-                        ],
-                        style={"fontSize": "20px"},
-                    ),
-                    md=8,
-                ),
+                dbc.Col(md=1),
+                dbc.Col(sliders_column, md=7),
             ],
             align="center",
-            style={"marginLeft": "10px", "marginRight": "10px"},
+            style={
+                "marginLeft": margin_side,
+                "marginRight": margin_side,
+                "marginTop": "-50px",
+            },
         ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dbc.Row(
-                            html.P(
-                                [
-                                    "The main sex hormones at play during pregnancy are: Estrogen, Progesterone and LH.",
-                                    html.Br(),
-                                    html.Br(),
-                                    "Estrogen supports the growth and function of the uterus,"
-                                    " for fetal development and stimulating maternal organs to accommodate pregnancy",
-                                    html.Br(),
-                                    "Progesterone maintains the uterine lining for implantation of the embryo and supports placental function.",
-                                    html.Br(),
-                                    "LH is crucial for triggering ovulation and "
-                                    "supports the early stages of pregnancy until the placenta is fully formed.",
-                                    html.Br(),
-                                    html.Br(),
-                                    "Use the sliders to adjust the hormone levels and observe how the predicted brain shape changes accordingly.",
-                                ],
-                                style={"fontSize": "20px"},
-                            )
-                        ),
-                        dbc.Row(sliders),
-                    ],
-                    md=7,
-                ),
-                dbc.Col(dcc.Graph(id="mesh-plot"), md=5),
-            ],
-            align="center",
-        ),
+        html.Div(style={"height": "20px"}),
     ],
     fluid=True,
 )
@@ -260,8 +256,8 @@ def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
                 b=0,
                 t=0,
             ),
-            width=800,
-            height=800,
+            width=700,
+            height=700,
             scene=dict(
                 aspectmode="data", xaxis_title="x", yaxis_title="y", zaxis_title="z"
             ),
@@ -299,6 +295,4 @@ def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
 
 
 if __name__ == "__main__":
-    app.run_server(
-        debug=True, use_reloader=False
-    )  # Turn off reloader if inside Jupyter
+    app.run_server(debug=True, use_reloader=True)  # Turn off reloader if inside Jupyter
