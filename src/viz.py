@@ -396,7 +396,9 @@ def plotly_mesh_sequence(mesh_sequence_vertices):
     mesh_sequence_vertices : np.array, shape=[n_X, n_vertices, 3]
         Sequence of meshes.
     """
-    plasma_cmap = px.colors.sequential.Plasma
+    # plasma_cmap = px.colors.sequential.Plasma
+    plasma_cmap = plt.cm.get_cmap("plasma")
+    len_sequence = len(mesh_sequence_vertices)
     data = []
 
     for i_mesh, mesh in enumerate(mesh_sequence_vertices):
@@ -407,7 +409,10 @@ def plotly_mesh_sequence(mesh_sequence_vertices):
                 z=mesh[:, 2],
                 mode="markers",
                 marker=dict(
-                    color=plasma_cmap[i_mesh], size=5, opacity=0.8, symbol="circle"
+                    color=plasma_cmap(i_mesh / len_sequence),
+                    size=5,
+                    opacity=0.8,
+                    symbol="circle",
                 ),
             )
         )

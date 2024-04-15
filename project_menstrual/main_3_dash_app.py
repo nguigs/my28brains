@@ -9,35 +9,21 @@ Notes on Dash:
     to change the size of the title.
 """
 
-import itertools
 import os
 import random
-import subprocess
-import sys
 
-import dash
 import dash_bootstrap_components as dbc
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import plotly.graph_objects as go  # or plotly.express as px
 from dash import Dash, Input, Output, callback, dcc, html
-# import meshplot as mp
-from IPython.display import clear_output, display
-from scipy.ndimage import gaussian_filter
-from scipy.spatial import KDTree
-from scipy.spatial.distance import cdist
 
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import geomstats.backend as gs
 
-import H2_SurfaceMatch.utils.input_output as h2_io
-import H2_SurfaceMatch.utils.utils
 import project_menstrual.default_config as default_config
 import src.datasets.utils as data_utils
 import src.setcwd
-from H2_SurfaceMatch.utils.input_output import plotGeodesic
-from src.regression import check_euclidean, training
+from src.regression import training
 
 src.setcwd.main()
 
@@ -47,27 +33,18 @@ os.environ["GEOMSTATS_BACKEND"] = "pytorch"
 
 (
     space,
-    y,
+    mesh_sequence_vertices,
     vertex_colors,
     all_hormone_levels,
-    true_intercept,
-    true_coef,
 ) = data_utils.load_real_data(default_config)
 
-n_vertices = len(y[0])
+n_vertices = len(mesh_sequence_vertices[0])
+n_meshes_in_sequence = len(mesh_sequence_vertices)
 faces = gs.array(space.faces).numpy()
 
-n_train = int(default_config.train_test_split * len(y))
-
-X_indices = np.arange(len(y))
-# Shuffle the array to get random values
-random.shuffle(X_indices)
-train_indices = X_indices[:n_train]
-train_indices = np.sort(train_indices)
-test_indices = X_indices[n_train:]
-test_indices = np.sort(test_indices)
-
-# TODO: instead, save these values in main_2, and then load them here. or, figure out how to predict the mesh using just the intercept and coef learned here, and then load them.
+# TODO: instead, save these values in main_2, and then load them here.
+# or, figure out how to predict the mesh using just the intercept
+# and coef learned here, and then load them.
 
 progesterone_levels = gs.array(all_hormone_levels["Prog"].values)
 estrogen_levels = gs.array(all_hormone_levels["Estro"].values)
@@ -85,6 +62,7 @@ shbg_average = gs.mean(shbg_levels)
 fsh_average = gs.mean(fsh_levels)
 # gest_week_average = gs.mean(gest_week)
 
+y = mesh_sequence_vertices
 X_multiple = gs.vstack(
     (
         progesterone_levels,
@@ -104,6 +82,17 @@ X_multiple = gs.vstack(
     percent_significant_p_values,
 ) = training.fit_linear_regression(y, X_multiple, return_p=True)
 
+# NOTE (Nina): this is not really n_train
+# since we've just trained on the whole dataset
+n_train = int(default_config.train_test_split * n_meshes_in_sequence)
+
+X_indices = np.arange(n_meshes_in_sequence)
+# Shuffle the array to get random values
+random.shuffle(X_indices)
+train_indices = X_indices[:n_train]
+train_indices = np.sort(train_indices)
+test_indices = X_indices[n_train:]
+test_indices = np.sort(test_indices)
 mr_score_array = training.compute_R2(y, X_multiple, test_indices, train_indices)
 
 # hormone p values
