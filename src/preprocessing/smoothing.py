@@ -1,8 +1,8 @@
 """Functions to smoothen the vertices of a mesh using different techniques."""
 
-
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
+
 
 def compute_neighbors(mesh, k=5):
     """Compute the k-nearest neighbors for each vertex in a mesh based on 3D spatial data.
@@ -15,15 +15,18 @@ def compute_neighbors(mesh, k=5):
         list of lists: Each sublist contains the indices of the k nearest neighbors for each vertex.
     """
     # Initialize NearestNeighbors model
-    neigh = NearestNeighbors(n_neighbors=k+1, algorithm='auto').fit(mesh)
-    
+    neigh = NearestNeighbors(n_neighbors=k + 1, algorithm="auto").fit(mesh)
+
     # Find k+1 nearest neighbors (including the point itself)
     _, indices = neigh.kneighbors(mesh)
-    
+
     # Create a list of lists for neighbor indices, excluding the point itself from its list of neighbors
-    neighbors = [list(ind[1:]) for ind in indices]  # skip the first one as it is the point itself
+    neighbors = [
+        list(ind[1:]) for ind in indices
+    ]  # skip the first one as it is the point itself
 
     return neighbors
+
 
 def median_smooth(mesh, neighbors):
     """Smooth a mesh using the median coordinates of neighboring vertices.
@@ -51,4 +54,3 @@ def median_smooth(mesh, neighbors):
             mesh_smooth[i] = np.median(neighbor_vertices, axis=0)
 
     return mesh_smooth
-

@@ -373,7 +373,10 @@ def load_real_data(config):
         a2=project_config.a2,
     )
     optimizer = get_optimizer(
-        config.use_cuda, n_vertices=len(mesh_sequence_vertices[0]), max_iter=100, tol=1e-5
+        config.use_cuda,
+        n_vertices=len(mesh_sequence_vertices[0]),
+        max_iter=100,
+        tol=1e-5,
     )
     elastic_metric.exp_solver = DiscreteSurfacesExpSolver(
         space=space, n_steps=config.n_steps, optimizer=optimizer
@@ -386,8 +389,12 @@ def load_real_data(config):
     if project_config.dataset_name == "pregnancy_mesh":
         hormones_path = "/home/data/pregnancy/28Baby_Hormones.csv"
         hormones_df = pd.read_csv(hormones_path, delimiter=",")
-        hormones_df["dayID"] = [int(entry.split("-")[1]) for entry in hormones_df["sessionID"]]
-        hormones_df = hormones_df.drop(hormones_df[hormones_df["dayID"] == 27].index)  # sess 27 is a repeat of sess 26
+        hormones_df["dayID"] = [
+            int(entry.split("-")[1]) for entry in hormones_df["sessionID"]
+        ]
+        hormones_df = hormones_df.drop(
+            hormones_df[hormones_df["dayID"] == 27].index
+        )  # sess 27 is a repeat of sess 26
         # df = df[df["dayID"] != 27]  # sess 27 is a repeat of sess 26
 
     hormones_df = hormones_df[hormones_df["dayID"] < project_config.day_range[1] + 1]
@@ -395,9 +402,10 @@ def load_real_data(config):
     if days_to_ignore is not None:
         for day in days_to_ignore:
             day = int(day)
-            hormones_df = hormones_df.drop(hormones_df[hormones_df["dayID"] == day].index).reset_index(drop=True)
+            hormones_df = hormones_df.drop(
+                hormones_df[hormones_df["dayID"] == day].index
+            ).reset_index(drop=True)
             print("Hormones excluded from day: ", day)
-
 
     if project_config.dataset_name == "pregnancy_mesh":
         print("df index: ", hormones_df.index)
@@ -456,6 +464,3 @@ def mesh_diameter(mesh_vertices):
             if distance > max_distance:
                 max_distance = distance
     return max_distance
-
-
-

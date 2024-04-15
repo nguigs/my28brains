@@ -17,7 +17,6 @@ import numpy as np
 import plotly.graph_objects as go  # or plotly.express as px
 from dash import Dash, Input, Output, callback, dcc, html
 
-
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import geomstats.backend as gs
 
@@ -43,8 +42,8 @@ n_vertices = len(mesh_sequence_vertices[0])
 n_meshes_in_sequence = len(mesh_sequence_vertices)
 faces = gs.array(space.faces).numpy()
 
-# TODO: instead, save these values in main_2, and then load them here. 
-# or, figure out how to predict the mesh using just the intercept 
+# TODO: instead, save these values in main_2, and then load them here.
+# or, figure out how to predict the mesh using just the intercept
 # and coef learned here, and then load them.
 
 progesterone_levels = gs.array(all_hormone_levels["Prog"].values)
@@ -83,7 +82,7 @@ X_multiple = gs.vstack(
     percent_significant_p_values,
 ) = training.fit_linear_regression(y, X_multiple, return_p=True)
 
-# NOTE (Nina): this is not really n_train 
+# NOTE (Nina): this is not really n_train
 # since we've just trained on the whole dataset
 n_train = int(default_config.train_test_split * n_meshes_in_sequence)
 

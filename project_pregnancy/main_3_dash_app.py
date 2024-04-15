@@ -15,7 +15,7 @@ import random
 import dash_bootstrap_components as dbc
 import numpy as np
 import plotly.graph_objects as go
-from dash import Dash, Input, Output, callback, dcc, html, State
+from dash import Dash, Input, Output, State, callback, dcc, html
 from sklearn.decomposition import PCA
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score

@@ -77,7 +77,7 @@ def main_run(config):
         # what the ground truth is.
         # NOTE (Nina): This is not the true intercept, this is the first mesh.
         true_intercept = gs.array(mesh_sequence_vertices[0])
-        # NOTE (Nina): This is not the true coeff, 
+        # NOTE (Nina): This is not the true coeff,
         # this is the difference between the first two meshes.
         true_coef = gs.array(mesh_sequence_vertices[1] - mesh_sequence_vertices[0])
 
