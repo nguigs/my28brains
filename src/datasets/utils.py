@@ -279,7 +279,6 @@ def load_synthetic_data(config):
 
 def load_real_data(config):
     """Load real brain meshes according to values in config file."""
-    print(config)
     project_dir = config.project_dir
     project_config = import_default_config(project_dir)
 
