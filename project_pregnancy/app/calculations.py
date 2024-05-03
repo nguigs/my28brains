@@ -13,6 +13,7 @@ from sklearn.metrics import r2_score
 os.environ["GEOMSTATS_BACKEND"] = "pytorch"  # noqa: E402
 import geomstats.backend as gs
 import nibabel as nib
+import pandas as pd
 
 import project_pregnancy.default_config as default_config
 import src.datasets.utils as data_utils
@@ -170,57 +171,20 @@ def plot_slice_as_plotly(
     return fig
 
 
-def show_slices(slices, cmap="gray"):
-    """Display row of image slices.
-
-    Parameters
-    ----------
-    slices : list
-        List of integers that represent the indexes of the slices to plot.
-    """
-    fig, axes = plt.subplots(1, len(slices))
-    for i_slice, one_slice in enumerate(slices):
-        im = axes[i_slice].imshow(one_slice.T, cmap=cmap, origin="lower")
-    return fig, axes, im
-
-
-def show_slice(
-    one_slice, cmap="gray", title="Slice Visualization", x_label="X", y_label="Y"
-):
-    """Display an image slice.
-
-    Parameters
-    ----------
-    one_slice : ndarray
-        2D array representing the image slice.
-    cmap : str, optional
-        Colormap to use for the visualization.
-    """
-    # Create a new figure
-    fig, ax = plt.subplots()
-
-    # Display the slice
-    im = ax.imshow(one_slice.T, cmap=cmap, origin="lower")
-
-    # Customize the plot
-    ax.set_title(title)
-    ax.set_xlabel(x_label)
-    ax.set_ylabel(y_label)
-    fig.colorbar(im, ax=ax)
-
-    return fig
-
-
-def return_nii_plot(x, y, z):  # week,
+def return_nii_plot(x, y, z, raw_mri_dict, week=2):  # week,
     """Return the nii plot based on the week and the x, y, z coordinates."""
-    PREGNANCY_DIR = "/home/data/pregnancy"
-    img_path = os.path.join(PREGNANCY_DIR, "BrainNormalizedToTemplate.nii.gz")
-    img = nib.load(img_path)
-    img_data = img.get_fdata()
+    # PREGNANCY_DIR = "/home/data/pregnancy"
+    # img_path = os.path.join(PREGNANCY_DIR, "BrainNormalizedToTemplate.nii.gz")
+    # img = nib.load(img_path)
+    # img_data = img.get_fdata()
 
-    slice_0 = img_data[x, :, :]  # was 206
-    slice_1 = img_data[:, y, :]  # was 130
-    slice_2 = img_data[:, :, z]  # was 160
+    # slice_0 = img_data[x, :, :]  # was 206
+    # slice_1 = img_data[:, y, :]  # was 130
+    # slice_2 = img_data[:, :, z]  # was 160
+
+    slice_0 = raw_mri_dict[week][x, :, :]
+    slice_1 = raw_mri_dict[week][:, y, :]
+    slice_2 = raw_mri_dict[week][:, :, z]
 
     side_fig = plot_slice_as_plotly(
         slice_0, cmap="gray", title="Side View", x_label="Y", y_label="Z"
@@ -235,15 +199,64 @@ def return_nii_plot(x, y, z):  # week,
     return side_fig, front_fig, top_fig
 
 
-def pre_calculate_mri_slices(mri_coordinates_info):
+def pre_calculate_mri_figs(raw_mri_dict, mri_coordinates_info):
     """Pre-calculate the slices of the MRI image."""
-    PREGNANCY_DIR = "/home/data/pregnancy"
-    img_path = os.path.join(PREGNANCY_DIR, "BrainNormalizedToTemplate.nii.gz")
-    img = nib.load(img_path)
-    img_data = img.get_fdata()
+    # pre-calculate side view mri figs
 
-    slice_0 = img_data[206, :, :]
-    slice_1 = img_data[:, 130, :]
-    slice_2 = img_data[:, :, 160]
+    fig_dict = []
+    for week in raw_mri_dict.keys():
+        print("Calculating MRI figures for week", week)
+        x_values = gs.arange(
+            mri_coordinates_info["x"]["min_value"],
+            mri_coordinates_info["x"]["max_value"],
+            mri_coordinates_info["x"]["step"],
+        )
+        for x in x_values:
+            y_values = gs.arange(
+                mri_coordinates_info["y"]["min_value"],
+                mri_coordinates_info["y"]["max_value"],
+                mri_coordinates_info["y"]["step"],
+            )
+            for y in y_values:
+                z_values = gs.arange(
+                    mri_coordinates_info["z"]["min_value"],
+                    mri_coordinates_info["z"]["max_value"],
+                    mri_coordinates_info["z"]["step"],
+                )
+                for z in z_values:
+                    slice_0 = raw_mri_dict[week][x, :, :]
+                    slice_1 = raw_mri_dict[week][:, y, :]
+                    slice_2 = raw_mri_dict[week][:, :, z]
 
-    return slice_0, slice_1, slice_2
+                    side_fig = plot_slice_as_plotly(
+                        slice_0,
+                        cmap="gray",
+                        title="Side View",
+                        x_label="Y",
+                        y_label="Z",
+                    )
+                    front_fig = plot_slice_as_plotly(
+                        slice_1,
+                        cmap="gray",
+                        title="Front View",
+                        x_label="X",
+                        y_label="Z",
+                    )
+                    top_fig = plot_slice_as_plotly(
+                        slice_2, cmap="gray", title="Top View", x_label="X", y_label="Y"
+                    )
+                    print("Week", week, "x", x, "y", y, "z", z)
+
+                    fig_dict.append(
+                        {
+                            "week": week,
+                            "x": x,
+                            "y": y,
+                            "z": z,
+                            "side_fig": side_fig,
+                            "front_fig": front_fig,
+                            "top_fig": top_fig,
+                        }
+                    )
+    fig_df = pd.DataFrame(fig_dict)
+    return fig_df

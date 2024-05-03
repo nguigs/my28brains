@@ -4,6 +4,7 @@ import glob
 import os
 
 import geomstats.backend as gs
+import nibabel as nib
 import numpy as np
 import pandas as pd
 import torch
@@ -544,7 +545,7 @@ def load_real_data(config, return_og_segmentation=False):
     return space, mesh_sequence_vertices, vertex_colors, hormones_df
 
 
-def load_raw_mri_data(config):
+def load_raw_mri_data(mri_dir):
     """Load raw MRI data according to values in config file.
 
     Parameters
@@ -557,6 +558,29 @@ def load_raw_mri_data(config):
     nii_data : np.ndarray
         3D MRI data.
     """
+    mri_dict = {}
+    print(f"Looking into: {mri_dir}")
+    # for i_day, day_dir in enumerate(mri_dir):
+    for i_day, day_dir in enumerate(os.listdir(mri_dir)):
+        # Construct the full path to the day directory
+        full_day_dir = os.path.join(mri_dir, day_dir)
+
+        file_found = False
+        for file_name in os.listdir(full_day_dir):
+            if file_name.startswith("BrainNormalized") and file_name.endswith(
+                ".nii.gz"
+            ):
+                file_found = True
+                img_path = os.path.join(full_day_dir, file_name)
+                img = nib.load(img_path)
+                img_data = img.get_fdata()
+                mri_dict[i_day] = img_data
+                print(f"Loaded MRI data for day {i_day}")
+                break
+        if not file_found:
+            print(f"File not found in {day_dir}")
+
+    return mri_dict
 
 
 def load_mesh(mesh_type, n_subdivisions, config):

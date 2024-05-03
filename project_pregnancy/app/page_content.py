@@ -131,15 +131,18 @@ def homepage():
     )
 
 
-def coordinate_slider(coordinate_name, min_value, max_value, step, mean_value):
+def coordinate_slider(coordinate_name, mri_coordinates_info):
     """Return a slider for a coordinate (coordinate for mri slice)."""
     return dcc.Slider(
         id=f"{coordinate_name}-slider",
-        min=min_value,
-        max=max_value,
-        step=step,
-        value=mean_value,
-        marks={min_value: {"label": "min"}, max_value: {"label": "max"}},
+        min=mri_coordinates_info[coordinate_name]["min_value"],
+        max=mri_coordinates_info[coordinate_name]["max_value"],
+        step=mri_coordinates_info[coordinate_name]["step"],
+        value=mri_coordinates_info[coordinate_name]["mean_value"],
+        marks={
+            mri_coordinates_info[coordinate_name]["min_value"]: {"label": "min"},
+            mri_coordinates_info[coordinate_name]["max_value"]: {"label": "max"},
+        },
         tooltip={
             "placement": "bottom",
             "always_visible": True,
@@ -148,7 +151,7 @@ def coordinate_slider(coordinate_name, min_value, max_value, step, mean_value):
     )
 
 
-def explore_data():
+def explore_data(mri_coordinates_info):
     """Return the content of the data exploration page."""
     banner = [
         html.Div(style={"height": "20px"}),
@@ -178,7 +181,7 @@ def explore_data():
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("x", 0, 300, 1, 50),
+                    coordinate_slider("x", mri_coordinates_info),
                     dbc.Label(
                         "Y Coordinate (Changes Front View)",
                         style={
@@ -186,7 +189,7 @@ def explore_data():
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("y", 0, 300, 1, 50),
+                    coordinate_slider("y", mri_coordinates_info),
                     dbc.Label(
                         "Z Coordinate (Changes Top View)",
                         style={
@@ -194,7 +197,7 @@ def explore_data():
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("z", 0, 300, 1, 50),
+                    coordinate_slider("z", mri_coordinates_info),
                 ],
                 gap=3,
             )

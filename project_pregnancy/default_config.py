@@ -45,6 +45,7 @@ os.chdir(gitroot_path[:-1])
 work_dir = os.getcwd()  # code/my28brains/
 code_dir = os.path.dirname(work_dir)  # code/
 raw_dir = "/home/data/pregnancy/Segmentations"
+raw_preg_mri_dir = "/home/data/pregnancy/folder1"
 raw_end_day = 26
 day_dirs = [os.path.join(raw_dir, f"BB{i:02d}") for i in range(1, raw_end_day + 1)]
 blank_days = [15]

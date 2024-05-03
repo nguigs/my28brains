@@ -46,6 +46,9 @@ mesh_sequence_vertices = mesh_sequence_vertices[
     :9
 ]  # HACKALART: first 9 meshes are pregnancy
 
+# Load MRI data
+raw_mri_dict = data_utils.load_raw_mri_data(default_config.raw_preg_mri_dir)
+
 lr, pca, X_mean, y_mean, n_vertices, mesh_neighbors = calculations.train_lr_model(
     hormones_df, mesh_sequence_vertices
 )
@@ -72,28 +75,37 @@ hormones_info = {
     "LH": {"min_value": 0.59, "max_value": 1.45, "mean_value": X_mean[2], "step": 0.05},
 }
 
+trim_x = 20
+trim_y = 50
+trim_z = 70
+step = 5
 mri_coordinates_info = {
-    "estrogen": {
-        "min_value": 4100,
-        "max_value": 12400,
-        "mean_value": X_mean[0],
-        "step": 500,
+    "x": {
+        "min_value": 0 + trim_x,
+        "max_value": raw_mri_dict[0].shape[0] - 1 - trim_x - 20,
+        "mean_value": 0 + trim_x,
+        "step": step,
     },
-    "progesterone": {
-        "min_value": 54,
-        "max_value": 103,
-        "mean_value": X_mean[1],
-        "step": 3,
+    "y": {
+        "min_value": 0 + trim_y,
+        "max_value": raw_mri_dict[0].shape[1] - 1 - trim_y,
+        "mean_value": 0 + trim_x,
+        "step": step,
     },
-    "LH": {"min_value": 0.59, "max_value": 1.45, "mean_value": X_mean[2], "step": 0.05},
+    "z": {
+        "min_value": 0 + trim_z,
+        "max_value": raw_mri_dict[0].shape[2] - 1 - trim_z,
+        "mean_value": 0 + trim_x,
+        "step": step,
+    },
 }
 
-pre_calculated_mri_slices = calculations.pre_calculate_mri_slices(mri_coordinates_info)
+# fig_df  = calculations.pre_calculate_mri_figs(raw_mri_dict, mri_coordinates_info)
 
 sidebar = page_content.sidebar()
 
 home_page = page_content.homepage()
-explore_data_page = page_content.explore_data()
+explore_data_page = page_content.explore_data(mri_coordinates_info)
 ai_hormone_prediction_page = page_content.ai_hormone_prediction(hormones_info)
 
 # the styles for the main content position it to the right of the sidebar and
@@ -165,10 +177,10 @@ def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
     Input("y-slider", "drag_value"),
     Input("z-slider", "drag_value"),
 )
-def update_nii_plot(x, y, z):  # week,
+def update_nii_plot(x, y, z, week=2):  # week,
     """Update the nii plot based on the week and the x, y, z coordinates."""
-    side, front, top = calculations.return_nii_plot(x, y, z)
-    return side, front, top
+    side_fig, front_fig, top_fig = calculations.return_nii_plot(x, y, z, raw_mri_dict)
+    return side_fig, front_fig, top_fig
 
 
 if __name__ == "__main__":
