@@ -21,6 +21,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go  # or plotly.express as px
 from dash import Dash, Input, Output, callback, dcc, html
+
 # import meshplot as mp
 from IPython.display import clear_output, display
 from scipy.ndimage import gaussian_filter
@@ -360,7 +361,7 @@ def plot_hormone_levels_plotly(progesterone, FSH, LH, estrogen, SHBG, DHEAS):
 
 
 if __name__ == "__main__":
-    # app.run(debug=True)
-    app.run_server(
-        debug=True, use_reloader=False
-    )  # Turn off reloader if inside Jupyter
+    app.run(debug=True)
+    # app.run_server(
+    #     debug=True, use_reloader=False
+    # )  # Turn off reloader if inside Jupyter

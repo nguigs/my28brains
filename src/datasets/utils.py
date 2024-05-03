@@ -277,82 +277,56 @@ def load_synthetic_data(config):
         raise ValueError(f"Unknown dataset name {config.dataset_name}")
 
 
-def load_real_data(config):
-    """Load real brain meshes according to values in config file."""
+def load_mesh_data_from_path(mesh_dir, config):
+    """Load mesh vertices, faces, vertex colors from a specified directory.
+
+    This function assumes the files are named in the following format:
+    {hemisphere}_structure_{structure_id}_day{day}_at_{area_threshold}.ply
+    """
     project_dir = config.project_dir
     project_config = import_default_config(project_dir)
 
-    mesh_sequence_vertices = []
-    mesh_sequence_faces = []
-    if project_config.sort:
-        days_to_ignore = None
-        print("Using mesh data from progesterone sorted directory")
-        mesh_dir = project_config.sorted_dir
+    # make sure there are meshes in the directory
+    mesh_string_base = os.path.join(
+        mesh_dir,
+        f"{config.hemispheres[0]}_structure_{config.structure_ids[0]}**.ply",
+    )
+    mesh_paths = sorted(glob.glob(mesh_string_base))
+    print(
+        f"\nFound {len(mesh_paths)} .plys for ({config.hemispheres[0]}, {config.structure_ids[0]}) in {mesh_dir}"
+    )
 
-        sorted_hormone_levels_path = os.path.join(mesh_dir, "sorted_hormone_levels.npy")
-        sorted_hormone_levels = np.loadtxt(sorted_hormone_levels_path, delimiter=",")
+    # load meshes
+    mesh_sequence_vertices, mesh_sequence_faces = [], []
+    first_day = int(project_config.day_range[0])
+    last_day = int(project_config.day_range[1])
 
-        for i, hormone_level in enumerate(sorted_hormone_levels):
-            file_suffix = f"hormone_level{hormone_level}.ply"
-
-            # List all files in the directory
-            files_in_directory = os.listdir(mesh_dir)
-
-            # Filter files that end with the specified format
-            matching_files = [
-                file for file in files_in_directory if file.endswith(file_suffix)
-            ]
-
-            # Construct the full file paths using os.path.join
-            mesh_paths = [os.path.join(mesh_dir, file) for file in matching_files]
-
-            # Print the result
-            for mesh_path in mesh_paths:
-                print(f"Mesh Path {i + 1}: {mesh_path}")
-                vertices, faces, _ = h2_io.loadData(mesh_path)
-                mesh_sequence_vertices.append(vertices)
-                mesh_sequence_faces.append(faces)
-    else:
-        print("Using mesh data from (unsorted) reparameterized directory")
-        mesh_dir = project_config.reparameterized_dir
-
-        # make sure there are meshes in the directory
-        mesh_string_base = os.path.join(
+    days_to_ignore = []
+    for day in range(first_day, last_day + 1):
+        mesh_path = os.path.join(
             mesh_dir,
-            f"{config.hemispheres[0]}_structure_{config.structure_ids[0]}**.ply",
-        )
-        mesh_paths = sorted(glob.glob(mesh_string_base))
-        print(
-            f"\nFound {len(mesh_paths)} .plys for ({config.hemispheres[0]}, {config.structure_ids[0]}) in {mesh_dir}"
+            f"{config.hemispheres[0]}_structure_{config.structure_ids[0]}_day{day:02d}"
+            f"_at_{config.area_thresholds[0]}.ply",
         )
 
-        # load meshes
-        mesh_sequence_vertices, mesh_sequence_faces = [], []
-        first_day = int(project_config.day_range[0])
-        last_day = int(project_config.day_range[1])
+        if not os.path.exists(mesh_path):
+            print(f"Day {day} has no data. Skipping.")
+            print(f"DayID not to use: {day}")
+            days_to_ignore.append(day)
+            continue
 
-        days_to_ignore = []
-        for day in range(first_day, last_day + 1):
-            mesh_path = os.path.join(
-                mesh_dir,
-                f"{config.hemispheres[0]}_structure_{config.structure_ids[0]}_day{day:02d}"
-                f"_at_{config.area_thresholds[0]}.ply",
-            )
-            if not os.path.exists(mesh_path):
-                print(f"Day {day} has no data. Skipping.")
-                print(f"DayID not to use: {day}")
-                days_to_ignore.append(day)
-                continue
+        vertices, faces, vertex_colors = h2_io.loadData(mesh_path)
 
-            vertices, faces, vertex_colors = h2_io.loadData(mesh_path)
-            if vertices.shape[0] == 0:
-                print(f"Day {day} has no data. Skipping.")
-                print(f"DayID not to use: {day}")
-                days_to_ignore.append(day)
-                continue
-            mesh_sequence_vertices.append(vertices)
-            mesh_sequence_faces.append(faces)
-        days_to_ignore = gs.array(days_to_ignore)
+        if vertices.shape[0] == 0:
+            print(f"Day {day} has no data. Skipping.")
+            print(f"DayID not to use: {day}")
+            days_to_ignore.append(day)
+            continue
+
+        mesh_sequence_vertices.append(vertices)
+        mesh_sequence_faces.append(faces)
+
+    days_to_ignore = gs.array(days_to_ignore)
 
     mesh_sequence_vertices = gs.array(mesh_sequence_vertices)
 
@@ -361,6 +335,139 @@ def load_real_data(config):
             raise ValueError("Meshes are not parameterized: not the same faces.")
 
     mesh_faces = gs.array(mesh_sequence_faces[0])
+
+    return mesh_sequence_vertices, mesh_faces, vertex_colors, days_to_ignore
+
+
+def load_hormone_sorted_mesh_data_from_path(mesh_dir, config):
+    """Load mesh vertices, faces, vertex colors from a the hormone sorted dir.
+
+    This function assumes the files end with the following format:
+    hormone_level{hormone_level}.ply
+    """
+    days_to_ignore = None
+    print("Using mesh data from progesterone sorted directory")
+
+    sorted_hormone_levels_path = os.path.join(mesh_dir, "sorted_hormone_levels.npy")
+    sorted_hormone_levels = np.loadtxt(sorted_hormone_levels_path, delimiter=",")
+
+    mesh_sequence_vertices = []
+    mesh_sequence_faces = []
+
+    for i, hormone_level in enumerate(sorted_hormone_levels):
+        file_suffix = f"hormone_level{hormone_level}.ply"
+
+        # List all files in the directory
+        files_in_directory = os.listdir(mesh_dir)
+
+        # Filter files that end with the specified format
+        matching_files = [
+            file for file in files_in_directory if file.endswith(file_suffix)
+        ]
+
+        # Construct the full file paths using os.path.join
+        mesh_paths = [os.path.join(mesh_dir, file) for file in matching_files]
+
+        # Print the result
+        for mesh_path in mesh_paths:
+            print(f"Mesh Path {i + 1}: {mesh_path}")
+            vertices, faces, _ = h2_io.loadData(mesh_path)
+            mesh_sequence_vertices.append(vertices)
+            mesh_sequence_faces.append(faces)
+
+    mesh_sequence_vertices = gs.array(mesh_sequence_vertices)
+
+    for faces in mesh_sequence_faces:
+        if (faces != mesh_sequence_faces[0]).all():
+            raise ValueError("Meshes are not parameterized: not the same faces.")
+
+    mesh_faces = gs.array(mesh_sequence_faces[0])
+
+    return mesh_sequence_vertices, mesh_faces, None, days_to_ignore
+
+
+def load_real_data(config, return_og_segmentation=False):
+    """Load real brain meshes according to values in config file."""
+    project_dir = config.project_dir
+    project_config = import_default_config(project_dir)
+
+    if project_config.sort:
+        mesh_dir = project_config.sorted_dir
+        (
+            mesh_sequence_vertices,
+            mesh_faces,
+            vertex_colors,
+            days_to_ignore,
+        ) = load_hormone_sorted_mesh_data_from_path(mesh_dir, config)
+    else:
+        print("Using mesh data from (unsorted) reparameterized directory")
+        mesh_dir = project_config.reparameterized_dir
+
+        (
+            mesh_sequence_vertices,
+            mesh_faces,
+            vertex_colors,
+            days_to_ignore,
+        ) = load_mesh_data_from_path(mesh_dir, config)
+
+    if return_og_segmentation:
+        mesh_dir = project_config.nondegenerate_dir
+        (
+            raw_mesh_sequence_vertices,
+            raw_mesh_faces,
+            raw_vertex_colors,
+            _,
+        ) = load_mesh_data_from_path(mesh_dir, config)
+
+    #     # make sure there are meshes in the directory
+    #     mesh_string_base = os.path.join(
+    #         mesh_dir,
+    #         f"{config.hemispheres[0]}_structure_{config.structure_ids[0]}**.ply",
+    #     )
+    #     mesh_paths = sorted(glob.glob(mesh_string_base))
+    #     print(
+    #         f"\nFound {len(mesh_paths)} .plys for ({config.hemispheres[0]}, {config.structure_ids[0]}) in {mesh_dir}"
+    #     )
+
+    #     # load meshes
+    #     mesh_sequence_vertices, mesh_sequence_faces = [], []
+    #     first_day = int(project_config.day_range[0])
+    #     last_day = int(project_config.day_range[1])
+
+    #     days_to_ignore = []
+    #     for day in range(first_day, last_day + 1):
+    #         mesh_path = os.path.join(
+    #             mesh_dir,
+    #             f"{config.hemispheres[0]}_structure_{config.structure_ids[0]}_day{day:02d}"
+    #             f"_at_{config.area_thresholds[0]}.ply",
+    #         )
+
+    #         if not os.path.exists(mesh_path):
+    #             print(f"Day {day} has no data. Skipping.")
+    #             print(f"DayID not to use: {day}")
+    #             days_to_ignore.append(day)
+    #             continue
+
+    #         vertices, faces, vertex_colors = h2_io.loadData(mesh_path)
+
+    #         if vertices.shape[0] == 0:
+    #             print(f"Day {day} has no data. Skipping.")
+    #             print(f"DayID not to use: {day}")
+    #             days_to_ignore.append(day)
+    #             continue
+
+    #         mesh_sequence_vertices.append(vertices)
+    #         mesh_sequence_faces.append(faces)
+
+    #     days_to_ignore = gs.array(days_to_ignore)
+
+    # mesh_sequence_vertices = gs.array(mesh_sequence_vertices)
+
+    # for faces in mesh_sequence_faces:
+    #     if (faces != mesh_sequence_faces[0]).all():
+    #         raise ValueError("Meshes are not parameterized: not the same faces.")
+
+    # mesh_faces = gs.array(mesh_sequence_faces[0])
 
     space = DiscreteSurfaces(faces=mesh_faces)
     elastic_metric = ElasticMetric(
@@ -422,7 +529,34 @@ def load_real_data(config):
     print(f"mesh_sequence_vertices shape: {mesh_sequence_vertices.shape}")
     print(f"hormones_df shape: {hormones_df.shape}")
 
+    if return_og_segmentation:
+        return (
+            space,
+            mesh_sequence_vertices,
+            mesh_faces,
+            vertex_colors,
+            hormones_df,
+            raw_mesh_sequence_vertices,
+            raw_mesh_faces,
+            raw_vertex_colors,
+        )
+
     return space, mesh_sequence_vertices, vertex_colors, hormones_df
+
+
+def load_raw_mri_data(config):
+    """Load raw MRI data according to values in config file.
+
+    Parameters
+    ----------
+    config : dict
+        Configuration dictionary.
+
+    Returns
+    -------
+    nii_data : np.ndarray
+        3D MRI data.
+    """
 
 
 def load_mesh(mesh_type, n_subdivisions, config):
