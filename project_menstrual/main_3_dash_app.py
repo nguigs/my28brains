@@ -258,7 +258,7 @@ sliders = dbc.Card(
 
 app.layout = dbc.Container(
     [
-        html.H1("Brain Shape Prediction with Hormones, Pregnancy"),
+        html.H1("Brain Shape Prediction with Hormones, Menstrual"),
         html.Hr(),
         dbc.Row(
             [
