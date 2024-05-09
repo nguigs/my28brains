@@ -73,7 +73,20 @@ hormones_info = {
         "step": 3,
     },
     "LH": {"min_value": 0.59, "max_value": 1.45, "mean_value": X_mean[2], "step": 0.05},
+    "gest-week": {
+        "min_value": -3,
+        "max_value": 162,
+        "mean_value": 1,
+        "step": 1,
+    },
+    "scan-number": {
+        "min_value": 0,
+        "max_value": 24,
+        "mean_value": 12,
+        "step": 1,
+    },
 }
+
 
 trim_x = 20
 trim_y = 50
@@ -105,7 +118,7 @@ mri_coordinates_info = {
 sidebar = page_content.sidebar()
 
 home_page = page_content.homepage()
-explore_data_page = page_content.explore_data(mri_coordinates_info)
+explore_data_page = page_content.explore_data(mri_coordinates_info, hormones_info)
 ai_hormone_prediction_page = page_content.ai_hormone_prediction(hormones_info)
 
 # the styles for the main content position it to the right of the sidebar and
@@ -142,6 +155,7 @@ def render_page_content(pathname):
 
 @app.callback(
     Output("mesh-plot", "figure"),
+    # Input("week-slider", "drag_value"),
     Input("estrogen-slider", "drag_value"),
     Input("progesterone-slider", "drag_value"),
     Input("LH-slider", "drag_value"),
@@ -172,15 +186,43 @@ def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
         Output("nii-plot-front", "figure"),
         Output("nii-plot-top", "figure"),
     ],
-    # Input("gestation-week-slider", "drag_value"),
+    Input("sess-number-slider", "drag_value"),
     Input("x-slider", "drag_value"),
     Input("y-slider", "drag_value"),
     Input("z-slider", "drag_value"),
 )
-def update_nii_plot(x, y, z, week=2):  # week,
+def update_nii_plot(gest_week, x, y, z):  # week,
     """Update the nii plot based on the week and the x, y, z coordinates."""
-    side_fig, front_fig, top_fig = calculations.return_nii_plot(x, y, z, raw_mri_dict)
+    side_fig, front_fig, top_fig = calculations.return_nii_plot(
+        gest_week, x, y, z, raw_mri_dict
+    )
     return side_fig, front_fig, top_fig
+
+
+@app.callback(
+    Output("session-info", "children"),
+    Input("sess-number-slider", "drag_value"),
+)
+def update_session_info(sess_number):
+    """Update the session info based on the slider."""
+    gest_week = hormones_df.iloc[sess_number]["GestWeek"]
+    estrogen = hormones_df.iloc[sess_number]["Estrogen"]
+    progesterone = hormones_df.iloc[sess_number]["Progesterone"]
+    LH = hormones_df.iloc[sess_number]["LH"]
+    endo_status = hormones_df.iloc[sess_number]["EndoStatus"]
+    trimester = hormones_df.iloc[sess_number]["Trimester"]
+
+    session_info = {
+        "Session Number": sess_number,
+        "Gestational Week": gest_week,
+        "Estrogen": estrogen,
+        "Progesterone": progesterone,
+        "LH": LH,
+        "Endometriosis Status": endo_status,
+        "Trimester": trimester,
+    }
+
+    return f"Session info: {session_info}"
 
 
 if __name__ == "__main__":

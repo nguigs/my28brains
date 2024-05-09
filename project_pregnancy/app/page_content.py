@@ -74,6 +74,26 @@ def hormone_slider(hormone_name, hormones_info):
     )
 
 
+def slider(slider_name, slider_info):
+    """Return a slider with the info in slider_info."""
+    return dcc.Slider(
+        id=f"{slider_name}-slider",
+        min=slider_info[slider_name]["min_value"],
+        max=slider_info[slider_name]["max_value"],
+        step=slider_info[slider_name]["step"],
+        value=slider_info[slider_name]["mean_value"],
+        marks={
+            slider_info[slider_name]["min_value"]: {"label": "min"},
+            slider_info[slider_name]["max_value"]: {"label": "max"},
+        },
+        tooltip={
+            "placement": "bottom",
+            "always_visible": True,
+            "style": {"fontSize": "30px", "fontFamily": text_fontfamily},
+        },
+    )
+
+
 def sidebar():
     """Return the sidebar of the app."""
     return html.Div(
@@ -151,7 +171,7 @@ def coordinate_slider(coordinate_name, mri_coordinates_info):
     )
 
 
-def explore_data(mri_coordinates_info):
+def explore_data(mri_coordinates_info, hormones_info):
     """Return the content of the data exploration page."""
     banner = [
         html.Div(style={"height": "20px"}),
@@ -169,11 +189,14 @@ def explore_data(mri_coordinates_info):
         [
             dbc.Stack(
                 [
-                    # dbc.Label(
-                    #     f"Gestational Week",
-                    #     style={"font-size": text_fontsize, "fontFamily": text_fontfamily},
-                    # ),
-                    # coordinate_slider("week", 0, 40, 1, 20),
+                    dbc.Label(
+                        "Scan Number",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    slider("scan-number", hormones_info),
                     dbc.Label(
                         "X Coordinate (Changes Side View)",
                         style={
@@ -181,7 +204,7 @@ def explore_data(mri_coordinates_info):
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("x", mri_coordinates_info),
+                    slider("x", mri_coordinates_info),
                     dbc.Label(
                         "Y Coordinate (Changes Front View)",
                         style={
@@ -189,7 +212,7 @@ def explore_data(mri_coordinates_info):
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("y", mri_coordinates_info),
+                    slider("y", mri_coordinates_info),
                     dbc.Label(
                         "Z Coordinate (Changes Top View)",
                         style={
@@ -197,7 +220,27 @@ def explore_data(mri_coordinates_info):
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("z", mri_coordinates_info),
+                    slider("z", mri_coordinates_info),
+                ],
+                gap=3,
+            )
+        ],
+        body=True,
+    )
+
+    sess_info_card = dbc.Card(
+        [
+            dbc.Stack(
+                [
+                    # create a text box that can be adjusted in a callback
+                    dbc.Label(
+                        "Session Information",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(id="session-info"),
                 ],
                 gap=3,
             )
@@ -270,6 +313,8 @@ def explore_data(mri_coordinates_info):
                 [
                     # dbc.Col(sm=1, width=100),
                     dbc.Col(sliders_column, sm=7, width=700),
+                    # dbc.Col(sm=1, width=100),
+                    dbc.Col(sess_info_card, sm=4, width=700),
                 ],
                 align="center",
                 style={
@@ -293,23 +338,31 @@ def ai_hormone_prediction(
             dbc.Stack(
                 [
                     dbc.Label(
+                        "Gestational Week",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    slider("gest-week", hormones_info),
+                    dbc.Label(
                         "Estrogen pg/ml",
                         style={"font-size": 30, "fontFamily": text_fontfamily},
                     ),
                     # estrogen_slider,
-                    hormone_slider("estrogen", hormones_info),
+                    slider("estrogen", hormones_info),
                     dbc.Label(
                         "Progesterone ng/ml",
                         style={"font-size": 30, "fontFamily": text_fontfamily},
                     ),
                     # progesterone_slider,
-                    hormone_slider("progesterone", hormones_info),
+                    slider("progesterone", hormones_info),
                     dbc.Label(
                         "LH ng/ml",
                         style={"font-size": 30, "fontFamily": text_fontfamily},
                     ),
                     # LH_slider,
-                    hormone_slider("LH", hormones_info),
+                    slider("LH", hormones_info),
                 ],
                 gap=3,
             )

@@ -143,15 +143,15 @@ def predict_mesh(
         layout=layout,
     )
 
-    if relayoutData and ("scene.camera" in relayoutData):
-        scene_camera = relayoutData["scene.camera"]
-    else:
-        scene_camera = dict(
-            up=dict(x=0, y=0, z=1),
-            center=dict(x=0, y=0, z=0),
-            eye=dict(x=0, y=0, z=2.5),
-        )
-    fig.update_layout(scene_camera=scene_camera)
+    # if relayoutData and ("scene.camera" in relayoutData):
+    #     scene_camera = relayoutData["scene.camera"]
+    # else:
+    #     scene_camera = dict(
+    #         up=dict(x=0, y=0, z=1),
+    #         center=dict(x=0, y=0, z=0),
+    #         eye=dict(x=0, y=0, z=2.5),
+    #     )
+    # fig.update_layout(scene_camera=scene_camera)
     return fig
 
 
@@ -171,7 +171,7 @@ def plot_slice_as_plotly(
     return fig
 
 
-def return_nii_plot(x, y, z, raw_mri_dict, week=2):  # week,
+def return_nii_plot(gest_week, x, y, z, raw_mri_dict):  # week,
     """Return the nii plot based on the week and the x, y, z coordinates."""
     # PREGNANCY_DIR = "/home/data/pregnancy"
     # img_path = os.path.join(PREGNANCY_DIR, "BrainNormalizedToTemplate.nii.gz")
@@ -182,9 +182,9 @@ def return_nii_plot(x, y, z, raw_mri_dict, week=2):  # week,
     # slice_1 = img_data[:, y, :]  # was 130
     # slice_2 = img_data[:, :, z]  # was 160
 
-    slice_0 = raw_mri_dict[week][x, :, :]
-    slice_1 = raw_mri_dict[week][:, y, :]
-    slice_2 = raw_mri_dict[week][:, :, z]
+    slice_0 = raw_mri_dict[gest_week][x, :, :]
+    slice_1 = raw_mri_dict[gest_week][:, y, :]
+    slice_2 = raw_mri_dict[gest_week][:, :, z]
 
     side_fig = plot_slice_as_plotly(
         slice_0, cmap="gray", title="Side View", x_label="Y", y_label="Z"
