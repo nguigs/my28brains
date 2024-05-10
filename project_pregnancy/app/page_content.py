@@ -138,14 +138,23 @@ def homepage():
         style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
     )
 
+    # intro_text_row = dbc.Row(
+    #     [dbc.Col(img_herbrain, md=7), dbc.Col(md=1), dbc.Col(intro_text, md=3)],
+    #     style={"marginLeft": margin_side, "marginRight": margin_side},
+    # )
+    intro_image_row = dbc.Row(
+        [dbc.Col(md=2), dbc.Col(img_herbrain, md=8), dbc.Col(md=2)],
+        style={"marginLeft": margin_side, "marginRight": margin_side},
+    )
     intro_text_row = dbc.Row(
-        [dbc.Col(img_herbrain, md=4), dbc.Col(md=1), dbc.Col(intro_text, md=7)],
+        [dbc.Col(md=1), dbc.Col(intro_text, md=10), dbc.Col(md=1)],
         style={"marginLeft": margin_side, "marginRight": margin_side},
     )
 
     return dbc.Container(
         [
             *banner,
+            intro_image_row,
             intro_text_row,
         ]
     )
@@ -431,7 +440,7 @@ def ai_hormone_prediction(
         html.P(
             [
                 html.Br(),
-                "Use the sliders to adjust the hormone levels and observe predicted shape changes in the left hippocampal formation.",
+                "Even though the hippocampus volume not appear to change much in the MRI images, the hippocampus is experiencing major shape changes, which we have taught an AI to predict. Use the sliders to adjust the hormone levels and observe predicted shape changes in the left hippocampal formation.",
             ],
             style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
         ),
