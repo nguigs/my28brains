@@ -339,54 +339,87 @@ def ai_hormone_prediction(
     hormones_info,
 ):  # estrogen_slider, progesterone_slider, LH_slider, mesh_plot,
     """Return the content of the AI hormone prediction page."""
-    sliders_card = dbc.Card(
+    week_slider_card = dbc.Card(
         [
-            dbc.Stack(
-                [
-                    dbc.Label(
-                        "Gestational Week",
-                        style={
-                            "font-size": text_fontsize,
-                            "fontFamily": text_fontfamily,
-                        },
-                    ),
-                    slider("gest-week", hormones_info),
-                    dbc.Label(
-                        "Estrogen pg/ml",
-                        style={"font-size": 30, "fontFamily": text_fontfamily},
-                    ),
-                    # estrogen_slider,
-                    slider("estrogen", hormones_info),
-                    dbc.Label(
-                        "Progesterone ng/ml",
-                        style={"font-size": 30, "fontFamily": text_fontfamily},
-                    ),
-                    # progesterone_slider,
-                    slider("progesterone", hormones_info),
-                    dbc.Label(
-                        "LH ng/ml",
-                        style={"font-size": 30, "fontFamily": text_fontfamily},
-                    ),
-                    # LH_slider,
-                    slider("LH", hormones_info),
+            html.Div(
+                id="gest_week_slider_container",
+                style={"display": "block"},
+                children=[
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Gestational Week",
+                                style={
+                                    "display": "block",
+                                    "font-size": text_fontsize,
+                                    "fontFamily": text_fontfamily,
+                                },
+                            ),
+                            slider("gest-week", hormones_info),
+                        ],
+                        gap=3,
+                    )
                 ],
-                gap=3,
-            )
+            ),
+        ],
+        body=True,
+    )
+
+    hormone_sliders_card = dbc.Card(
+        [
+            html.Div(
+                id="hormone_slider_container",
+                style={"display": "block"},
+                children=[
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Estrogen pg/ml",
+                                style={
+                                    "font-size": 30,
+                                    "fontFamily": text_fontfamily,
+                                    "display": "block",
+                                },
+                            ),
+                            # estrogen_slider,
+                            slider("estrogen", hormones_info),
+                            dbc.Label(
+                                "Progesterone ng/ml",
+                                style={
+                                    "font-size": 30,
+                                    "fontFamily": text_fontfamily,
+                                    "display": "block",
+                                },
+                            ),
+                            # progesterone_slider,
+                            slider("progesterone", hormones_info),
+                            dbc.Label(
+                                "LH ng/ml",
+                                style={
+                                    "font-size": 30,
+                                    "fontFamily": text_fontfamily,
+                                    "display": "block",
+                                },
+                            ),
+                            # LH_slider,
+                            slider("LH", hormones_info),
+                        ],
+                        gap=3,
+                    )
+                ],
+            ),
         ],
         body=True,
     )
 
     sliders_column = [
-        # dbc.Row(
-        #     html.P(
-        #         [
-        #             html.Br(),
-        #             "Use the sliders to adjust the hormone levels and observe predicted shape changes in the left hippocampal formation.",
-        #         ],
-        #         style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
-        #     )
-        # ),
-        dbc.Row(sliders_card),
+        html.Button(
+            "Click Here to Toggle Between Gestational Week vs Hormone Value Prediction",
+            id="button",
+            n_clicks=0,
+        ),
+        dbc.Row(week_slider_card),
+        dbc.Row(hormone_sliders_card),
     ]
 
     banner = [

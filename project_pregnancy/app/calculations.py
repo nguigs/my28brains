@@ -25,7 +25,7 @@ from src.regression import training
 src.setcwd.main()
 
 
-def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
+def train_lr_model(X, mesh_sequence_vertices, n_X, p_values=False):
     """Train a linear regression model on the data."""
     mean_mesh = mesh_sequence_vertices.mean(axis=0)
 
@@ -34,10 +34,6 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
     mesh_neighbors = smoothing.compute_neighbors(mean_mesh, k=k_neighbors)
 
     n_meshes, n_vertices, _ = mesh_sequence_vertices.shape
-
-    X = hormones_df[["estro", "prog", "lh"]].values
-    _, n_hormones = X.shape
-    X_mean = X.mean(axis=0)
 
     y = mesh_sequence_vertices.reshape(n_meshes, -1)
     y_mean = y.mean(axis=0)
@@ -54,7 +50,7 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
     lr.fit(X, y_pca)
     y_pca_pred = lr.predict(X)
     r2 = r2_score(y_pca, y_pca_pred)
-    adjusted_r2 = 1 - (1 - r2) * (n_meshes - 1) / (n_meshes - n_hormones - 1)
+    adjusted_r2 = 1 - (1 - r2) * (n_meshes - 1) / (n_meshes - n_X - 1)
     print(f"Adjusted R2 score (adjusted for several inputs): {adjusted_r2:.2f}")
 
     if p_values:
@@ -70,7 +66,6 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
         return (
             lr,
             pca,
-            X_mean,
             y_mean,
             n_vertices,
             mesh_neighbors,
@@ -80,13 +75,14 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
             lh_p_value,
         )
 
-    return lr, pca, X_mean, y_mean, n_vertices, mesh_neighbors
+    return lr, pca, y_mean, n_vertices, mesh_neighbors
 
 
 def predict_mesh(
-    estrogen,
-    progesterone,
-    LH,
+    # estrogen,
+    # progesterone,
+    # LH,
+    X,
     lr,
     pca,
     y_mean,
@@ -99,8 +95,10 @@ def predict_mesh(
 ):
     """Predict the mesh based on the hormone values."""
     # Predict Mesh
-    X_multiple = gs.array([[estrogen, progesterone, LH]])
-    y_pca_pred = lr.predict(X_multiple)
+    # X_multiple = gs.array([[estrogen, progesterone, LH]])
+    # y_pca_pred = lr.predict(X_multiple)
+
+    y_pca_pred = lr.predict(X)
 
     y_pred = pca.inverse_transform(y_pca_pred) + y_mean.numpy()
     mesh_pred = y_pred.reshape(n_vertices, 3)

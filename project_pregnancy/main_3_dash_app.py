@@ -53,9 +53,25 @@ mesh_sequence_vertices = mesh_sequence_vertices[
 # Load MRI data
 raw_mri_dict = data_utils.load_raw_mri_data(default_config.raw_preg_mri_dir)
 
-lr, pca, X_mean, y_mean, n_vertices, mesh_neighbors = calculations.train_lr_model(
-    hormones_df, mesh_sequence_vertices
-)
+X_hormones = hormones_df[["estro", "prog", "lh"]].values
+_, n_hormones = X_hormones.shape
+X_hormones_mean = X_hormones.mean(axis=0)
+
+(
+    lr_hormones,
+    pca_hormones,
+    y_mean_hormones,
+    n_vertices_hormones,
+    mesh_neighbors_hormones,
+) = calculations.train_lr_model(X_hormones, mesh_sequence_vertices, n_hormones)
+
+# X_gest_week = hormones_df["gestWeek"].values
+# X_gest_week_reshaped = X_gest_week.reshape(-1, 1)
+
+# lr_gest_week, pca_gest_week, y_mean_gest_week, n_vertices_gest_week, mesh_neighbors_gest_week = calculations.train_lr_model(
+#     X_gest_week_reshaped, mesh_sequence_vertices, 1
+# )
+
 
 app = Dash(
     __name__,
@@ -67,20 +83,25 @@ hormones_info = {
     "estrogen": {
         "min_value": 4100,
         "max_value": 12400,
-        "mean_value": X_mean[0],
+        "mean_value": X_hormones_mean[0],
         "step": 500,
     },
     "progesterone": {
         "min_value": 54,
         "max_value": 103,
-        "mean_value": X_mean[1],
+        "mean_value": X_hormones_mean[1],
         "step": 3,
     },
-    "LH": {"min_value": 0.59, "max_value": 1.45, "mean_value": X_mean[2], "step": 0.05},
+    "LH": {
+        "min_value": 0.59,
+        "max_value": 1.45,
+        "mean_value": X_hormones_mean[2],
+        "step": 0.05,
+    },
     "gest-week": {
-        "min_value": -3,
-        "max_value": 162,
-        "mean_value": 1,
+        "min_value": 15,
+        "max_value": 36,
+        "mean_value": 15,
         "step": 1,
     },
     "scan-number": {
@@ -157,31 +178,164 @@ def render_page_content(pathname):
     )
 
 
+def linear_interpolation(x_lower, x_higher, y_lower, y_upper, x_input):
+    """Linear interpolation between two points."""
+    # Calculate the slope
+    m = (y_upper - y_lower) / (x_higher - x_lower)
+
+    # Calculate the interpolated y value
+    y = y_lower + m * (x_input - x_lower)
+
+    return y
+
+
+def interpolate_or_return(df, x, x_label, y_label):
+    """Interpolate or return the y value based on the x value."""
+    print("interpolating")
+    # Sort dataframe by 'x' column
+    # df = df.sort_values(by='x')
+
+    # Extract x and y values from dataframe
+    x_values = df[x_label].values
+    y_values = df[y_label].values
+
+    # Check if x is within the range of known x values
+    if x < x_values[0]:
+        # Extrapolate using the first two data points
+        x_lower = x_values[0]
+        x_upper = x_values[1]
+        y_lower = y_values[0]
+        y_upper = y_values[1]
+
+        # Perform linear extrapolation
+        interpolated_y = linear_interpolation(x_lower, x_upper, y_lower, y_upper, x)
+
+        return interpolated_y
+    elif x in x_values:
+        # If x is found, return the corresponding y value
+        return y_values[np.where(x_values == x)[0][0]]
+    else:
+        # If x is not found, find the two nearest x values
+        closest_idx = np.abs(x_values - x).argmin()
+        if x_values[closest_idx] < x:
+            lower_index = closest_idx
+            upper_index = closest_idx + 1
+        else:
+            upper_index = closest_idx
+            lower_index = closest_idx - 1
+
+        print("index found")
+        x_lower = x_values[lower_index]
+        print("x_lower found")
+        x_upper = x_values[upper_index]
+        y_lower = y_values[lower_index]
+        y_upper = y_values[upper_index]
+
+        print(x_lower, x_upper, y_lower, y_upper, x)
+
+        # Perform linear interpolation
+        return linear_interpolation(x_lower, x_upper, y_lower, y_upper, x)
+
+
 @app.callback(
-    Output("mesh-plot", "figure"),
-    # Input("week-slider", "drag_value"),
+    [
+        Output("mesh-plot", "figure"),
+        Output("gest_week_slider_container", component_property="style"),
+        Output("hormone_slider_container", component_property="style"),
+    ],
+    Input("gest-week-slider", "drag_value"),
     Input("estrogen-slider", "drag_value"),
     Input("progesterone-slider", "drag_value"),
     Input("LH-slider", "drag_value"),
     State("mesh-plot", "figure"),
     State("mesh-plot", "relayoutData"),
+    Input("button", "n_clicks"),
 )
-def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
+def update_mesh(
+    gest_week, estrogen, progesterone, LH, current_figure, relayoutData, n_clicks=0
+):
     """Update the mesh plot based on the hormone levels."""
-    return calculations.predict_mesh(
-        estrogen,
-        progesterone,
-        LH,
-        lr,
-        pca,
-        y_mean,
-        n_vertices,
-        mesh_neighbors,
+    if (n_clicks % 2) == 0:
+        gest_week_slider_style = {"display": "none"}
+        hormone_week_slider_style = {"display": "block"}
+
+        # X_multiple = gs.array([[estrogen, progesterone, LH]])
+
+        # mesh_plot = calculations.predict_mesh(
+        #     X_multiple,
+        #     lr_hormones,
+        #     pca_hormones,
+        #     y_mean_hormones,
+        #     n_vertices_hormones,
+        #     mesh_neighbors_hormones,
+        #     space,
+        #     vertex_colors,
+        #     current_figure=current_figure,
+        #     relayoutData=relayoutData,
+        # )
+    else:
+        gest_week_slider_style = {"display": "block"}
+        hormone_week_slider_style = {"display": "none"}
+
+        print("hiding hormone sliders")
+
+        progesterone = interpolate_or_return(
+            hormones_df, gest_week, x_label="gestWeek", y_label="prog"
+        )
+        estrogen = interpolate_or_return(
+            hormones_df, gest_week, x_label="gestWeek", y_label="estro"
+        )
+        LH = interpolate_or_return(
+            hormones_df, gest_week, x_label="gestWeek", y_label="lh"
+        )
+        print("progesterone", progesterone)
+        print("estrogen", estrogen)
+        print("LH", LH)
+        print("gest_week", gest_week)
+
+        # X = gs.array(gest_week).reshape(-1, 1)
+        # print(X)
+
+        # all_gest_week = hormones_df['gestWeek'].values
+        # all_progesterone = hormones_df['progesterone'].values
+        # all_estrogen = hormones_df['estrogen'].values
+        # all_lh = hormones_df['lh'].values
+
+        # progesterone = interp1d(all_gest_week, progesterone_values, kind='linear', fill_value="extrapolate")
+        # interp_estrogen = interp1d(gestWeek_values, estrogen_values, kind='linear', fill_value="extrapolate")
+        # interp_lh = interp1d(gestWeek_values, lh_values, kind='linear', fill_value="extrapolate")
+
+        # mesh_plot = calculations.predict_mesh(
+        #     X,
+        #     lr_gest_week,
+        #     pca_gest_week,
+        #     y_mean_gest_week,
+        #     n_vertices_gest_week,
+        #     mesh_neighbors_gest_week,
+        #     space,
+        #     vertex_colors,
+        #     current_figure=current_figure,
+        #     relayoutData=relayoutData,
+        # )
+
+    X_multiple = gs.array([[estrogen, progesterone, LH]])
+
+    mesh_plot = calculations.predict_mesh(
+        X_multiple,
+        lr_hormones,
+        pca_hormones,
+        y_mean_hormones,
+        n_vertices_hormones,
+        mesh_neighbors_hormones,
         space,
         vertex_colors,
         current_figure=current_figure,
         relayoutData=relayoutData,
     )
+
+    print(n_clicks)
+
+    return mesh_plot, gest_week_slider_style, hormone_week_slider_style
 
 
 @app.callback(
