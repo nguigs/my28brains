@@ -74,6 +74,26 @@ def hormone_slider(hormone_name, hormones_info):
     )
 
 
+def slider(slider_name, slider_info):
+    """Return a slider with the info in slider_info."""
+    return dcc.Slider(
+        id=f"{slider_name}-slider",
+        min=slider_info[slider_name]["min_value"],
+        max=slider_info[slider_name]["max_value"],
+        step=slider_info[slider_name]["step"],
+        value=slider_info[slider_name]["mean_value"],
+        marks={
+            slider_info[slider_name]["min_value"]: {"label": "min"},
+            slider_info[slider_name]["max_value"]: {"label": "max"},
+        },
+        tooltip={
+            "placement": "bottom",
+            "always_visible": True,
+            "style": {"fontSize": "30px", "fontFamily": text_fontfamily},
+        },
+    )
+
+
 def sidebar():
     """Return the sidebar of the app."""
     return html.Div(
@@ -118,14 +138,23 @@ def homepage():
         style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
     )
 
+    # intro_text_row = dbc.Row(
+    #     [dbc.Col(img_herbrain, md=7), dbc.Col(md=1), dbc.Col(intro_text, md=3)],
+    #     style={"marginLeft": margin_side, "marginRight": margin_side},
+    # )
+    intro_image_row = dbc.Row(
+        [dbc.Col(md=2), dbc.Col(img_herbrain, md=8), dbc.Col(md=2)],
+        style={"marginLeft": margin_side, "marginRight": margin_side},
+    )
     intro_text_row = dbc.Row(
-        [dbc.Col(img_herbrain, md=4), dbc.Col(md=1), dbc.Col(intro_text, md=7)],
+        [dbc.Col(md=1), dbc.Col(intro_text, md=10), dbc.Col(md=1)],
         style={"marginLeft": margin_side, "marginRight": margin_side},
     )
 
     return dbc.Container(
         [
             *banner,
+            intro_image_row,
             intro_text_row,
         ]
     )
@@ -151,7 +180,7 @@ def coordinate_slider(coordinate_name, mri_coordinates_info):
     )
 
 
-def explore_data(mri_coordinates_info):
+def explore_data(mri_coordinates_info, hormones_info):
     """Return the content of the data exploration page."""
     banner = [
         html.Div(style={"height": "20px"}),
@@ -169,11 +198,14 @@ def explore_data(mri_coordinates_info):
         [
             dbc.Stack(
                 [
-                    # dbc.Label(
-                    #     f"Gestational Week",
-                    #     style={"font-size": text_fontsize, "fontFamily": text_fontfamily},
-                    # ),
-                    # coordinate_slider("week", 0, 40, 1, 20),
+                    dbc.Label(
+                        "Scan Number",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    slider("scan-number", hormones_info),
                     dbc.Label(
                         "X Coordinate (Changes Side View)",
                         style={
@@ -181,7 +213,7 @@ def explore_data(mri_coordinates_info):
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("x", mri_coordinates_info),
+                    slider("x", mri_coordinates_info),
                     dbc.Label(
                         "Y Coordinate (Changes Front View)",
                         style={
@@ -189,7 +221,7 @@ def explore_data(mri_coordinates_info):
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("y", mri_coordinates_info),
+                    slider("y", mri_coordinates_info),
                     dbc.Label(
                         "Z Coordinate (Changes Top View)",
                         style={
@@ -197,7 +229,33 @@ def explore_data(mri_coordinates_info):
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    coordinate_slider("z", mri_coordinates_info),
+                    slider("z", mri_coordinates_info),
+                ],
+                gap=3,
+            )
+        ],
+        body=True,
+    )
+
+    sess_info_card = dbc.Card(
+        [
+            dbc.Stack(
+                [
+                    # create a text box that can be adjusted in a callback
+                    dbc.Label(
+                        "Session Information",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(
+                        id="session-info",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
                 ],
                 gap=3,
             )
@@ -219,8 +277,8 @@ def explore_data(mri_coordinates_info):
                             style={"paddingTop": "0px"},
                             # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
                         ),
-                        sm=4,
-                        width=700,
+                        sm=5,
+                        # width=1000,
                     ),
                     dbc.Col(
                         html.Div(
@@ -228,8 +286,8 @@ def explore_data(mri_coordinates_info):
                             style={"paddingTop": "0px"},
                             # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
                         ),
-                        sm=4,
-                        width=700,
+                        sm=3,
+                        # width=550,
                     ),
                     dbc.Col(
                         html.Div(
@@ -237,8 +295,8 @@ def explore_data(mri_coordinates_info):
                             style={"paddingTop": "0px"},
                             # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
                         ),
-                        sm=4,
-                        width=700,
+                        sm=3,
+                        # width=550,
                     ),
                 ],
                 align="center",
@@ -257,7 +315,7 @@ def explore_data(mri_coordinates_info):
             *banner,
             dbc.Row(
                 [
-                    dbc.Col(plots_card, sm=12, width=100),
+                    dbc.Col(plots_card, sm=14),  # , width=100),
                 ],
                 align="center",
                 style={
@@ -270,6 +328,8 @@ def explore_data(mri_coordinates_info):
                 [
                     # dbc.Col(sm=1, width=100),
                     dbc.Col(sliders_column, sm=7, width=700),
+                    # dbc.Col(sm=1, width=100),
+                    dbc.Col(sess_info_card, sm=4, width=700),
                 ],
                 align="center",
                 style={
@@ -288,46 +348,87 @@ def ai_hormone_prediction(
     hormones_info,
 ):  # estrogen_slider, progesterone_slider, LH_slider, mesh_plot,
     """Return the content of the AI hormone prediction page."""
-    sliders_card = dbc.Card(
+    week_slider_card = dbc.Card(
         [
-            dbc.Stack(
-                [
-                    dbc.Label(
-                        "Estrogen pg/ml",
-                        style={"font-size": 30, "fontFamily": text_fontfamily},
-                    ),
-                    # estrogen_slider,
-                    hormone_slider("estrogen", hormones_info),
-                    dbc.Label(
-                        "Progesterone ng/ml",
-                        style={"font-size": 30, "fontFamily": text_fontfamily},
-                    ),
-                    # progesterone_slider,
-                    hormone_slider("progesterone", hormones_info),
-                    dbc.Label(
-                        "LH ng/ml",
-                        style={"font-size": 30, "fontFamily": text_fontfamily},
-                    ),
-                    # LH_slider,
-                    hormone_slider("LH", hormones_info),
+            html.Div(
+                id="gest_week_slider_container",
+                style={"display": "block"},
+                children=[
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Gestational Week",
+                                style={
+                                    "display": "block",
+                                    "font-size": text_fontsize,
+                                    "fontFamily": text_fontfamily,
+                                },
+                            ),
+                            slider("gest-week", hormones_info),
+                        ],
+                        gap=3,
+                    )
                 ],
-                gap=3,
-            )
+            ),
+        ],
+        body=True,
+    )
+
+    hormone_sliders_card = dbc.Card(
+        [
+            html.Div(
+                id="hormone_slider_container",
+                style={"display": "block"},
+                children=[
+                    dbc.Stack(
+                        [
+                            dbc.Label(
+                                "Estrogen pg/ml",
+                                style={
+                                    "font-size": 30,
+                                    "fontFamily": text_fontfamily,
+                                    "display": "block",
+                                },
+                            ),
+                            # estrogen_slider,
+                            slider("estrogen", hormones_info),
+                            dbc.Label(
+                                "Progesterone ng/ml",
+                                style={
+                                    "font-size": 30,
+                                    "fontFamily": text_fontfamily,
+                                    "display": "block",
+                                },
+                            ),
+                            # progesterone_slider,
+                            slider("progesterone", hormones_info),
+                            dbc.Label(
+                                "LH ng/ml",
+                                style={
+                                    "font-size": 30,
+                                    "fontFamily": text_fontfamily,
+                                    "display": "block",
+                                },
+                            ),
+                            # LH_slider,
+                            slider("LH", hormones_info),
+                        ],
+                        gap=3,
+                    )
+                ],
+            ),
         ],
         body=True,
     )
 
     sliders_column = [
-        # dbc.Row(
-        #     html.P(
-        #         [
-        #             html.Br(),
-        #             "Use the sliders to adjust the hormone levels and observe predicted shape changes in the left hippocampal formation.",
-        #         ],
-        #         style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
-        #     )
-        # ),
-        dbc.Row(sliders_card),
+        html.Button(
+            "Click Here to Toggle Between Gestational Week vs Hormone Value Prediction",
+            id="button",
+            n_clicks=0,
+        ),
+        dbc.Row(week_slider_card),
+        dbc.Row(hormone_sliders_card),
     ]
 
     banner = [
@@ -339,7 +440,7 @@ def ai_hormone_prediction(
         html.P(
             [
                 html.Br(),
-                "Use the sliders to adjust the hormone levels and observe predicted shape changes in the left hippocampal formation.",
+                "Even though the hippocampus volume not appear to change much in the MRI images, the hippocampus is experiencing major shape changes, which we have taught an AI to predict. Use the sliders to adjust the hormone levels and observe predicted shape changes in the left hippocampal formation.",
             ],
             style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
         ),

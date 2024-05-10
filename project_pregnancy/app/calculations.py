@@ -25,7 +25,7 @@ from src.regression import training
 src.setcwd.main()
 
 
-def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
+def train_lr_model(X, mesh_sequence_vertices, n_X, p_values=False):
     """Train a linear regression model on the data."""
     mean_mesh = mesh_sequence_vertices.mean(axis=0)
 
@@ -34,10 +34,6 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
     mesh_neighbors = smoothing.compute_neighbors(mean_mesh, k=k_neighbors)
 
     n_meshes, n_vertices, _ = mesh_sequence_vertices.shape
-
-    X = hormones_df[["estro", "prog", "lh"]].values
-    _, n_hormones = X.shape
-    X_mean = X.mean(axis=0)
 
     y = mesh_sequence_vertices.reshape(n_meshes, -1)
     y_mean = y.mean(axis=0)
@@ -54,7 +50,7 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
     lr.fit(X, y_pca)
     y_pca_pred = lr.predict(X)
     r2 = r2_score(y_pca, y_pca_pred)
-    adjusted_r2 = 1 - (1 - r2) * (n_meshes - 1) / (n_meshes - n_hormones - 1)
+    adjusted_r2 = 1 - (1 - r2) * (n_meshes - 1) / (n_meshes - n_X - 1)
     print(f"Adjusted R2 score (adjusted for several inputs): {adjusted_r2:.2f}")
 
     if p_values:
@@ -70,7 +66,6 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
         return (
             lr,
             pca,
-            X_mean,
             y_mean,
             n_vertices,
             mesh_neighbors,
@@ -80,13 +75,14 @@ def train_lr_model(hormones_df, mesh_sequence_vertices, p_values=False):
             lh_p_value,
         )
 
-    return lr, pca, X_mean, y_mean, n_vertices, mesh_neighbors
+    return lr, pca, y_mean, n_vertices, mesh_neighbors
 
 
 def predict_mesh(
-    estrogen,
-    progesterone,
-    LH,
+    # estrogen,
+    # progesterone,
+    # LH,
+    X,
     lr,
     pca,
     y_mean,
@@ -99,8 +95,10 @@ def predict_mesh(
 ):
     """Predict the mesh based on the hormone values."""
     # Predict Mesh
-    X_multiple = gs.array([[estrogen, progesterone, LH]])
-    y_pca_pred = lr.predict(X_multiple)
+    # X_multiple = gs.array([[estrogen, progesterone, LH]])
+    # y_pca_pred = lr.predict(X_multiple)
+
+    y_pca_pred = lr.predict(X)
 
     y_pred = pca.inverse_transform(y_pca_pred) + y_mean.numpy()
     mesh_pred = y_pred.reshape(n_vertices, 3)
@@ -143,15 +141,15 @@ def predict_mesh(
         layout=layout,
     )
 
-    if relayoutData and ("scene.camera" in relayoutData):
-        scene_camera = relayoutData["scene.camera"]
-    else:
-        scene_camera = dict(
-            up=dict(x=0, y=0, z=1),
-            center=dict(x=0, y=0, z=0),
-            eye=dict(x=0, y=0, z=2.5),
-        )
-    fig.update_layout(scene_camera=scene_camera)
+    # if relayoutData and ("scene.camera" in relayoutData):
+    #     scene_camera = relayoutData["scene.camera"]
+    # else:
+    #     scene_camera = dict(
+    #         up=dict(x=0, y=0, z=1),
+    #         center=dict(x=0, y=0, z=0),
+    #         eye=dict(x=0, y=0, z=2.5),
+    #     )
+    # fig.update_layout(scene_camera=scene_camera)
     return fig
 
 
@@ -160,18 +158,35 @@ def plot_slice_as_plotly(
 ):
     """Display an image slice as a Plotly figure."""
     # Create heatmap trace for the current slice
-    heatmap_trace = go.Heatmap(z=one_slice.T, colorscale=cmap)  # , zmin=0, zmax=1)
+    heatmap_trace = go.Heatmap(
+        z=one_slice.T, colorscale=cmap, showscale=False
+    )  # , zmin=0, zmax=1)
+
+    print("one slice shape:", one_slice.shape)
+
+    width = len(one_slice[:, 0]) * 2
+    height = len(one_slice[0]) * 2
+    print("Width:", width, "Height:", height)
+
+    layout = go.Layout(
+        title=title,
+        title_x=0.5,
+        xaxis=dict(title=x_label),
+        yaxis=dict(title=y_label),
+        width=int(width),
+        height=int(height),
+    )
 
     # Create a Plotly figure with the heatmap trace
-    fig = go.Figure(data=heatmap_trace)
+    fig = go.Figure(data=heatmap_trace, layout=layout)
 
     # Update layout to adjust appearance
-    fig.update_layout(title=title, xaxis_title=x_label, yaxis_title=y_label)
+    # fig.update_layout(title=title, xaxis_title=x_label, yaxis_title=y_label)
 
     return fig
 
 
-def return_nii_plot(x, y, z, raw_mri_dict, week=2):  # week,
+def return_nii_plot(sess_number, x, y, z, raw_mri_dict):  # week,
     """Return the nii plot based on the week and the x, y, z coordinates."""
     # PREGNANCY_DIR = "/home/data/pregnancy"
     # img_path = os.path.join(PREGNANCY_DIR, "BrainNormalizedToTemplate.nii.gz")
@@ -182,9 +197,9 @@ def return_nii_plot(x, y, z, raw_mri_dict, week=2):  # week,
     # slice_1 = img_data[:, y, :]  # was 130
     # slice_2 = img_data[:, :, z]  # was 160
 
-    slice_0 = raw_mri_dict[week][x, :, :]
-    slice_1 = raw_mri_dict[week][:, y, :]
-    slice_2 = raw_mri_dict[week][:, :, z]
+    slice_0 = raw_mri_dict[sess_number][x, :, :]
+    slice_1 = raw_mri_dict[sess_number][:, y, :]
+    slice_2 = raw_mri_dict[sess_number][:, :, z]
 
     side_fig = plot_slice_as_plotly(
         slice_0, cmap="gray", title="Side View", x_label="Y", y_label="Z"

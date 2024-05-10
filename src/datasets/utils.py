@@ -505,6 +505,7 @@ def load_real_data(config, return_og_segmentation=False):
         )  # sess 27 is a repeat of sess 26
         # df = df[df["dayID"] != 27]  # sess 27 is a repeat of sess 26
 
+    full_hormones_df = hormones_df
     hormones_df = hormones_df[hormones_df["dayID"] < project_config.day_range[1] + 1]
     hormones_df = hormones_df[hormones_df["dayID"] > project_config.day_range[0] - 1]
     if days_to_ignore is not None:
@@ -537,12 +538,13 @@ def load_real_data(config, return_og_segmentation=False):
             mesh_faces,
             vertex_colors,
             hormones_df,
+            full_hormones_df,
             raw_mesh_sequence_vertices,
             raw_mesh_faces,
             raw_vertex_colors,
         )
 
-    return space, mesh_sequence_vertices, vertex_colors, hormones_df
+    return space, mesh_sequence_vertices, vertex_colors, hormones_df, full_hormones_df
 
 
 def load_raw_mri_data(mri_dir):
@@ -561,7 +563,7 @@ def load_raw_mri_data(mri_dir):
     mri_dict = {}
     print(f"Looking into: {mri_dir}")
     # for i_day, day_dir in enumerate(mri_dir):
-    for i_day, day_dir in enumerate(os.listdir(mri_dir)):
+    for i_session, day_dir in enumerate(os.listdir(mri_dir)):
         # Construct the full path to the day directory
         full_day_dir = os.path.join(mri_dir, day_dir)
 
@@ -574,8 +576,8 @@ def load_raw_mri_data(mri_dir):
                 img_path = os.path.join(full_day_dir, file_name)
                 img = nib.load(img_path)
                 img_data = img.get_fdata()
-                mri_dict[i_day] = img_data
-                print(f"Loaded MRI data for day {i_day}")
+                mri_dict[i_session] = img_data
+                print(f"Loaded MRI data for sess {i_session}")
                 break
         if not file_found:
             print(f"File not found in {day_dir}")
