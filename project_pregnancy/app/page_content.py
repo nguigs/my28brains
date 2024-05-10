@@ -240,7 +240,13 @@ def explore_data(mri_coordinates_info, hormones_info):
                             "fontFamily": text_fontfamily,
                         },
                     ),
-                    html.Div(id="session-info"),
+                    html.Div(
+                        id="session-info",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
                 ],
                 gap=3,
             )
@@ -262,8 +268,8 @@ def explore_data(mri_coordinates_info, hormones_info):
                             style={"paddingTop": "0px"},
                             # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
                         ),
-                        sm=4,
-                        width=700,
+                        sm=5,
+                        # width=1000,
                     ),
                     dbc.Col(
                         html.Div(
@@ -271,8 +277,8 @@ def explore_data(mri_coordinates_info, hormones_info):
                             style={"paddingTop": "0px"},
                             # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
                         ),
-                        sm=4,
-                        width=700,
+                        sm=3,
+                        # width=550,
                     ),
                     dbc.Col(
                         html.Div(
@@ -280,8 +286,8 @@ def explore_data(mri_coordinates_info, hormones_info):
                             style={"paddingTop": "0px"},
                             # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
                         ),
-                        sm=4,
-                        width=700,
+                        sm=3,
+                        # width=550,
                     ),
                 ],
                 align="center",
@@ -300,7 +306,7 @@ def explore_data(mri_coordinates_info, hormones_info):
             *banner,
             dbc.Row(
                 [
-                    dbc.Col(plots_card, sm=12, width=100),
+                    dbc.Col(plots_card, sm=14),  # , width=100),
                 ],
                 align="center",
                 style={

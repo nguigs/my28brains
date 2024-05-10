@@ -39,9 +39,13 @@ src.setcwd.main()
     mesh_sequence_vertices,
     vertex_colors,
     hormones_df,
+    full_hormones_df,
 ) = data_utils.load_real_data(default_config, return_og_segmentation=False)
 # Do not include postpartum values that are too low
 hormones_df = hormones_df[hormones_df["EndoStatus"] == "Pregnant"]
+# convert sessionID sess-01 formatting to 1 for all entries
+# hormones_df['session_number'] = hormones_df['sessionID'].str.extract('(\d+)') #.astype(int)
+
 mesh_sequence_vertices = mesh_sequence_vertices[
     :9
 ]  # HACKALART: first 9 meshes are pregnancy
@@ -80,9 +84,9 @@ hormones_info = {
         "step": 1,
     },
     "scan-number": {
-        "min_value": 0,
-        "max_value": 24,
-        "mean_value": 12,
+        "min_value": 1,
+        "max_value": 26,
+        "mean_value": 1,
         "step": 1,
     },
 }
@@ -185,44 +189,53 @@ def update_mesh(estrogen, progesterone, LH, current_figure, relayoutData):
         Output("nii-plot-side", "figure"),
         Output("nii-plot-front", "figure"),
         Output("nii-plot-top", "figure"),
+        Output("session-info", "children"),
     ],
-    Input("sess-number-slider", "drag_value"),
+    Input("scan-number-slider", "drag_value"),
     Input("x-slider", "drag_value"),
     Input("y-slider", "drag_value"),
     Input("z-slider", "drag_value"),
 )
-def update_nii_plot(gest_week, x, y, z):  # week,
+def update_nii_plot(scan_number, x, y, z):  # week,
     """Update the nii plot based on the week and the x, y, z coordinates."""
+    if scan_number is None:
+        return go.Figure(), go.Figure(), go.Figure(), "Please select a scan number."
+
     side_fig, front_fig, top_fig = calculations.return_nii_plot(
-        gest_week, x, y, z, raw_mri_dict
+        scan_number, x, y, z, raw_mri_dict
     )
-    return side_fig, front_fig, top_fig
 
+    sessionID = f"ses-{scan_number:02d}"
+    sess_df = full_hormones_df[full_hormones_df["sessionID"] == sessionID]
 
-@app.callback(
-    Output("session-info", "children"),
-    Input("sess-number-slider", "drag_value"),
-)
-def update_session_info(sess_number):
-    """Update the session info based on the slider."""
-    gest_week = hormones_df.iloc[sess_number]["GestWeek"]
-    estrogen = hormones_df.iloc[sess_number]["Estrogen"]
-    progesterone = hormones_df.iloc[sess_number]["Progesterone"]
-    LH = hormones_df.iloc[sess_number]["LH"]
-    endo_status = hormones_df.iloc[sess_number]["EndoStatus"]
-    trimester = hormones_df.iloc[sess_number]["Trimester"]
+    gest_week = sess_df["gestWeek"].values[0]
+    estrogen = sess_df["estro"].values[0]
+    progesterone = sess_df["prog"].values[0]
+    LH = sess_df["lh"].values[0]
+    endo_status = sess_df["EndoStatus"].values[0]
+    trimester = sess_df["trimester"].values[0]
 
-    session_info = {
-        "Session Number": sess_number,
-        "Gestational Week": gest_week,
-        "Estrogen": estrogen,
-        "Progesterone": progesterone,
-        "LH": LH,
-        "Endometriosis Status": endo_status,
-        "Trimester": trimester,
-    }
+    # session_info = {
+    #     "Session Number": scan_number,
+    #     "Gestational Week": gest_week,
+    #     "Estrogen": estrogen,
+    #     "Progesterone": progesterone,
+    #     "LH": LH,
+    #     "Pregnancy Status": endo_status,
+    #     "Trimester": trimester,
+    # }
 
-    return f"Session info: {session_info}"
+    session_info_text = (
+        f"Session Number: {scan_number},\n"
+        f"Gestational Week: {gest_week},\n"
+        f"Estrogen pg/ml: {estrogen},\n"
+        f"Progesterone ng/ml: {progesterone},\n"
+        f"LH ng/ml: {LH},\n"
+        f"Pregnancy Status: {endo_status},\n"
+        f"Trimester: {trimester}"
+    )
+
+    return side_fig, front_fig, top_fig, session_info_text
 
 
 if __name__ == "__main__":

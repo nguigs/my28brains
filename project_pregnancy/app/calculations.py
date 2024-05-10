@@ -160,18 +160,35 @@ def plot_slice_as_plotly(
 ):
     """Display an image slice as a Plotly figure."""
     # Create heatmap trace for the current slice
-    heatmap_trace = go.Heatmap(z=one_slice.T, colorscale=cmap)  # , zmin=0, zmax=1)
+    heatmap_trace = go.Heatmap(
+        z=one_slice.T, colorscale=cmap, showscale=False
+    )  # , zmin=0, zmax=1)
+
+    print("one slice shape:", one_slice.shape)
+
+    width = len(one_slice[:, 0]) * 2
+    height = len(one_slice[0]) * 2
+    print("Width:", width, "Height:", height)
+
+    layout = go.Layout(
+        title=title,
+        title_x=0.5,
+        xaxis=dict(title=x_label),
+        yaxis=dict(title=y_label),
+        width=int(width),
+        height=int(height),
+    )
 
     # Create a Plotly figure with the heatmap trace
-    fig = go.Figure(data=heatmap_trace)
+    fig = go.Figure(data=heatmap_trace, layout=layout)
 
     # Update layout to adjust appearance
-    fig.update_layout(title=title, xaxis_title=x_label, yaxis_title=y_label)
+    # fig.update_layout(title=title, xaxis_title=x_label, yaxis_title=y_label)
 
     return fig
 
 
-def return_nii_plot(gest_week, x, y, z, raw_mri_dict):  # week,
+def return_nii_plot(sess_number, x, y, z, raw_mri_dict):  # week,
     """Return the nii plot based on the week and the x, y, z coordinates."""
     # PREGNANCY_DIR = "/home/data/pregnancy"
     # img_path = os.path.join(PREGNANCY_DIR, "BrainNormalizedToTemplate.nii.gz")
@@ -182,9 +199,9 @@ def return_nii_plot(gest_week, x, y, z, raw_mri_dict):  # week,
     # slice_1 = img_data[:, y, :]  # was 130
     # slice_2 = img_data[:, :, z]  # was 160
 
-    slice_0 = raw_mri_dict[gest_week][x, :, :]
-    slice_1 = raw_mri_dict[gest_week][:, y, :]
-    slice_2 = raw_mri_dict[gest_week][:, :, z]
+    slice_0 = raw_mri_dict[sess_number][x, :, :]
+    slice_1 = raw_mri_dict[sess_number][:, y, :]
+    slice_2 = raw_mri_dict[sess_number][:, :, z]
 
     side_fig = plot_slice_as_plotly(
         slice_0, cmap="gray", title="Side View", x_label="Y", y_label="Z"
