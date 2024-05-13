@@ -267,55 +267,87 @@ def explore_data(mri_coordinates_info, hormones_info):
         dbc.Row(sliders_card),
     ]
 
-    plots_card = dbc.Card(
+    plots_card = dbc.Row(
         [
-            dbc.Row(
-                [
-                    dbc.Col(
-                        html.Div(
-                            dcc.Graph(id="nii-plot-side"),
-                            style={"paddingTop": "0px"},
-                            # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
-                        ),
-                        sm=5,
-                        # width=1000,
-                    ),
-                    dbc.Col(
-                        html.Div(
-                            dcc.Graph(id="nii-plot-front"),
-                            style={"paddingTop": "0px"},
-                            # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
-                        ),
-                        sm=3,
-                        # width=550,
-                    ),
-                    dbc.Col(
-                        html.Div(
-                            dcc.Graph(id="nii-plot-top"),
-                            style={"paddingTop": "0px"},
-                            # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
-                        ),
-                        sm=3,
-                        # width=550,
-                    ),
-                ],
-                align="center",
-                style={
-                    "marginLeft": margin_side,
-                    "marginRight": margin_side,
-                    "marginTop": "50px",
-                },
+            dbc.Col(
+                html.Div(
+                    dcc.Graph(id="nii-plot-side", config={"displayModeBar": False}),
+                    style={"paddingTop": "0px"},
+                ),
+                sm=4,
+            ),
+            dbc.Col(
+                html.Div(
+                    dcc.Graph(id="nii-plot-front", config={"displayModeBar": False}),
+                    style={"paddingTop": "0px"},
+                ),
+                sm=4,
+            ),
+            dbc.Col(
+                html.Div(
+                    dcc.Graph(id="nii-plot-top", config={"displayModeBar": False}),
+                    style={"paddingTop": "0px"},
+                ),
+                sm=4,
             ),
         ],
-        body=True,
+        align="center",
+        style={
+            "marginLeft": margin_side,
+            "marginRight": margin_side,
+            "marginTop": "50px",
+        },
     )
+
+    # plots_card = dbc.Card(
+    #     [
+    #         dbc.Row(
+    #             [
+    #                 dbc.Col(
+    #                     html.Div(
+    #                         dcc.Graph(id="nii-plot-side", config={"displayModeBar": False}),
+    #                         style={"paddingTop": "0px"},
+    #                         # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
+    #                     ),
+    #                     sm=4, #sm=5,
+    #                     # width=1000,
+    #                 ),
+    #                 dbc.Col(
+    #                     html.Div(
+    #                         dcc.Graph(id="nii-plot-front", config={"displayModeBar": False}),
+    #                         style={"paddingTop": "0px"},
+    #                         # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
+    #                     ),
+    #                     sm=4, #sm=3,
+    #                     # width=550,
+    #                 ),
+    #                 dbc.Col(
+    #                     html.Div(
+    #                         dcc.Graph(id="nii-plot-top", config={"displayModeBar": False}),
+    #                         style={"paddingTop": "0px"},
+    #                         # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
+    #                     ),
+    #                     sm=4, #sm=3,
+    #                     # width=550,
+    #                 ),
+    #             ],
+    #             align="center",
+    #             style={
+    #                 "marginLeft": margin_side,
+    #                 "marginRight": margin_side,
+    #                 "marginTop": "50px",
+    #             },
+    #         ),
+    #     ],
+    #     body=True,
+    # )
 
     return dbc.Container(
         [
             *banner,
             dbc.Row(
                 [
-                    dbc.Col(plots_card, sm=14),  # , width=100),
+                    dbc.Col(plots_card, sm=14),  # ,  , width=100),
                 ],
                 align="center",
                 style={
