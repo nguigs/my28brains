@@ -53,6 +53,11 @@ img_herbrain = html.Img(
     style={"width": "100%", "height": "auto"},
 )
 
+img_study_timeline = html.Img(
+    src="assets/study_timeline.png",
+    style={"width": "100%", "height": "auto"},
+)
+
 
 def hormone_slider(hormone_name, hormones_info):
     """Return a slider for a hormone."""
@@ -182,6 +187,14 @@ def coordinate_slider(coordinate_name, mri_coordinates_info):
 
 def explore_data(mri_coordinates_info, hormones_info):
     """Return the content of the data exploration page."""
+    # citation_text = html.P(
+    #     [html.Br(), "Study Timeline From: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)"],
+    #     style={"fontSize": text_fontsize, "fontFamily": text_fontfamily, "marginLeft": margin_side, "marginRight": margin_side},
+    # ),
+    study_row = dbc.Row(
+        [dbc.Col(md=1), dbc.Col(img_study_timeline, md=10), dbc.Col(md=1)],
+        style={"marginLeft": margin_side, "marginRight": margin_side},
+    )
     banner = [
         html.Div(style={"height": "20px"}),
         html.P(
@@ -189,8 +202,24 @@ def explore_data(mri_coordinates_info, hormones_info):
             style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
         ),
         html.P(
-            [html.Br(), "Use the sliders to adjust the MRI slice position."],
+            [
+                html.Br(),
+                "Use the 'Session Number' slider to flip through T1 brain data from each MRI session. Use the X, Y, Z coordinate sliders choose the MRI slice.",
+            ],
             style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+        ),
+        study_row,
+        html.P(
+            [
+                html.Br(),
+                "Study Timeline From: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)",
+            ],
+            style={
+                "fontSize": text_fontsize,
+                "fontFamily": text_fontfamily,
+                "marginLeft": margin_side,
+                "marginRight": margin_side,
+            },
         ),
     ]
 
@@ -199,7 +228,7 @@ def explore_data(mri_coordinates_info, hormones_info):
             dbc.Stack(
                 [
                     dbc.Label(
-                        "Scan Number",
+                        "Session Number",
                         style={
                             "font-size": text_fontsize,
                             "fontFamily": text_fontfamily,
@@ -243,14 +272,56 @@ def explore_data(mri_coordinates_info, hormones_info):
                 [
                     # create a text box that can be adjusted in a callback
                     dbc.Label(
-                        "Session Information",
+                        "Session Information:",
                         style={
                             "font-size": text_fontsize,
                             "fontFamily": text_fontfamily,
                         },
                     ),
                     html.Div(
-                        id="session-info",
+                        id="session-number",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(
+                        id="gest-week",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(
+                        id="estrogen-level",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(
+                        id="progesterone-level",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(
+                        id="LH-level",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(
+                        id="endo-status",
+                        style={
+                            "font-size": text_fontsize,
+                            "fontFamily": text_fontfamily,
+                        },
+                    ),
+                    html.Div(
+                        id="trimester",
                         style={
                             "font-size": text_fontsize,
                             "fontFamily": text_fontfamily,

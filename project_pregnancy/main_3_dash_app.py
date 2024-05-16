@@ -121,19 +121,19 @@ mri_coordinates_info = {
     "x": {
         "min_value": 0 + trim_x,
         "max_value": raw_mri_dict[0].shape[0] - 1 - trim_x - 20,
-        "mean_value": 0 + trim_x,
+        "mean_value": 110,
         "step": step,
     },
     "y": {
         "min_value": 0 + trim_y,
         "max_value": raw_mri_dict[0].shape[1] - 1 - trim_y,
-        "mean_value": 0 + trim_x,
+        "mean_value": 100,
         "step": step,
     },
     "z": {
         "min_value": 0 + trim_z,
         "max_value": raw_mri_dict[0].shape[2] - 1 - trim_z,
-        "mean_value": 0 + trim_x,
+        "mean_value": 170,
         "step": step,
     },
 }
@@ -343,7 +343,13 @@ def update_mesh(
         Output("nii-plot-side", "figure"),
         Output("nii-plot-front", "figure"),
         Output("nii-plot-top", "figure"),
-        Output("session-info", "children"),
+        Output("session-number", "children"),
+        Output("gest-week", "children"),
+        Output("estrogen-level", "children"),
+        Output("progesterone-level", "children"),
+        Output("LH-level", "children"),
+        Output("endo-status", "children"),
+        Output("trimester", "children"),
     ],
     Input("scan-number-slider", "drag_value"),
     Input("x-slider", "drag_value"),
@@ -353,7 +359,18 @@ def update_mesh(
 def update_nii_plot(scan_number, x, y, z):  # week,
     """Update the nii plot based on the week and the x, y, z coordinates."""
     if scan_number is None:
-        return go.Figure(), go.Figure(), go.Figure(), "Please select a scan number."
+        return (
+            go.Figure(),
+            go.Figure(),
+            go.Figure(),
+            "Please select a scan number.",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        )
 
     side_fig, front_fig, top_fig = calculations.return_nii_plot(
         scan_number, x, y, z, raw_mri_dict
@@ -369,27 +386,36 @@ def update_nii_plot(scan_number, x, y, z):  # week,
     endo_status = sess_df["EndoStatus"].values[0]
     trimester = sess_df["trimester"].values[0]
 
-    # session_info = {
-    #     "Session Number": scan_number,
-    #     "Gestational Week": gest_week,
-    #     "Estrogen": estrogen,
-    #     "Progesterone": progesterone,
-    #     "LH": LH,
-    #     "Pregnancy Status": endo_status,
-    #     "Trimester": trimester,
-    # }
+    # session_info_text = html.P(
+    #     f"Session Number: {scan_number},\n"
+    #     f"Gestational Week: {gest_week},\n"
+    #     f"Estrogen pg/ml: {estrogen},\n"
+    #     f"Progesterone ng/ml: {progesterone},\n"
+    #     f"LH ng/ml: {LH},\n"
+    #     f"Pregnancy Status: {endo_status},\n"
+    #     f"Trimester: {trimester}"
+    # )
 
-    session_info_text = (
-        f"Session Number: {scan_number},\n"
-        f"Gestational Week: {gest_week},\n"
-        f"Estrogen pg/ml: {estrogen},\n"
-        f"Progesterone ng/ml: {progesterone},\n"
-        f"LH ng/ml: {LH},\n"
-        f"Pregnancy Status: {endo_status},\n"
-        f"Trimester: {trimester}"
+    session_number_text = f"Session Number: {scan_number}"
+    gest_week_text = f"Gestational Week: {gest_week}"
+    estrogen_text = f"Estrogen pg/ml: {estrogen}"
+    progesterone_text = f"Progesterone ng/ml: {progesterone}"
+    LH_text = f"LH ng/ml: {LH}"
+    endo_status_text = f"Pregnancy Status: {endo_status}"
+    trimester_text = f"Trimester: {trimester}"
+
+    return (
+        side_fig,
+        front_fig,
+        top_fig,
+        session_number_text,
+        gest_week_text,
+        estrogen_text,
+        progesterone_text,
+        LH_text,
+        endo_status_text,
+        trimester_text,
     )
-
-    return side_fig, front_fig, top_fig, session_info_text
 
 
 if __name__ == "__main__":

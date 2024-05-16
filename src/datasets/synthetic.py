@@ -92,7 +92,7 @@ def generate_ellipsoid_mesh(subdivisions=3, ellipsoid_dims=[2, 2, 3]):
 def generate_cube_mesh():
     """Create the cube mesh used in geomstats unit tests.
 
-    See: geomstats/datasets/data/cube_meshes/cube_mesh_diagram.jpeg.
+    See: geomstats/datasets/data/cube_meshes/cube_mesh_diagram.jpeg. by Adele Myers
     """
     vertices = np.array(
         [
