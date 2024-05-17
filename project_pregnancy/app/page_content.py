@@ -65,7 +65,7 @@ instructions_title = dbc.Row(
                 src="assets/instructions_emoji.jpeg",
                 style={"width": "50px", "height": "auto"},
             ),
-            width=2,
+            width=1,
         ),
         dbc.Col(
             html.P("Instructions", style={"fontSize": title_fontsize}),
@@ -82,7 +82,7 @@ overview_title = dbc.Row(
                 src="assets/overview_emoji.jpeg",
                 style={"width": "50px", "height": "auto"},
             ),
-            width=2,
+            width=1,
         ),
         dbc.Col(
             html.P("Overview", style={"fontSize": title_fontsize}),
@@ -99,7 +99,7 @@ acknowledgements_title = dbc.Row(
                 src="assets/acknowledgements_emoji.jpeg",
                 style={"width": "50px", "height": "auto"},
             ),
-            width=2,
+            width=1,
         ),
         dbc.Col(
             html.P("Acknowledgements", style={"fontSize": title_fontsize}),
@@ -270,12 +270,14 @@ def homepage():
             html.Br(),
             html.Br(),
             # html.P("Instructions", style={"fontSize": title_fontsize}),
+            html.Hr(),
             instructions_title,
             html.Br(),
             "Use the sidebar to navigate between the different pages of the application. The 'Explore MRI Data' page allows you to explore the brain MRIs from the study. The 'AI: Hormones to Hippocampus Shape' page allows you to explore the relationship between hormones and the shape of the hippocampus.",
             html.Br(),
             html.Br(),
             # html.P("Acknowledgements", style={"fontSize": title_fontsize}),
+            html.Hr(),
             acknowledgements_title,
             html.Br(),
             "This application was developed by Adele Myers and Nina Miolane and made possible by the support of the Women's Brain Health Initiative. Brain MRI data was collected in the study: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024).",
@@ -341,27 +343,56 @@ def explore_data(mri_coordinates_info, hormones_info):
             [html.Br(), "Explore Brain MRIs Throughout Pregnancy"],
             style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
         ),
-        html.P(
-            [
-                html.Br(),
-                "Use the 'Session Number' slider to flip through T1 brain data from each MRI session. Use the X, Y, Z coordinate sliders choose the MRI slice.",
-            ],
-            style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
-        ),
-        study_row,
-        html.P(
-            [
-                html.Br(),
-                "Study Timeline From: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)",
-            ],
-            style={
-                "fontSize": text_fontsize,
-                "fontFamily": text_fontfamily,
-                "marginLeft": margin_side,
-                "marginRight": margin_side,
-            },
-        ),
     ]
+
+    overview_text = dbc.Row(
+        [
+            html.P(
+                [
+                    html.Br(),
+                    "MRI data was collected ~ once every 2 weeks throughout pregnancy, showing the structural changes that occur in the brain over the course of a human pregnancy. Estrogen, progesterone, and LH levels were also measured at most sessions.",
+                ],
+                style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+            ),
+            study_row,
+        ],
+    )
+
+    instructions_text = dbc.Row(
+        [
+            html.P(
+                [
+                    html.Br(),
+                    "Use the 'Session Number' slider to flip through T1 brain data from each MRI session. Use the X, Y, Z coordinate sliders choose the MRI slice. Additional information about the session will be displayed to the right of the sliders.",
+                    html.Br(),
+                    html.Br(),
+                ],
+                style={
+                    "fontSize": text_fontsize,
+                    "fontFamily": text_fontfamily,
+                    "marginLeft": margin_side,
+                    "marginRight": margin_side,
+                },
+            ),
+        ],
+    )
+
+    acknowledgements_text = dbc.Row(
+        [
+            html.P(
+                [
+                    html.Br(),
+                    "Data and study timeline image from: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)",
+                ],
+                style={
+                    "fontSize": text_fontsize,
+                    "fontFamily": text_fontfamily,
+                    "marginLeft": margin_side,
+                    "marginRight": margin_side,
+                },
+            ),
+        ],
+    )
 
     sliders_card = dbc.Card(
         [
@@ -556,6 +587,12 @@ def explore_data(mri_coordinates_info, hormones_info):
     return dbc.Container(
         [
             *banner,
+            overview_title,
+            overview_text,
+            dbc.Row(style={"height": "100px"}),
+            html.Hr(),
+            instructions_title,
+            instructions_text,
             dbc.Row(
                 [
                     dbc.Col(plots_card, sm=14),  # ,  , width=100),
@@ -581,7 +618,10 @@ def explore_data(mri_coordinates_info, hormones_info):
                     "marginTop": "50px",
                 },
             ),
-            html.Div(style={"height": "20px"}),
+            dbc.Row(style={"height": "100px"}),
+            html.Hr(),
+            acknowledgements_title,
+            acknowledgements_text,
         ],
         fluid=True,
     )
@@ -591,6 +631,44 @@ def ai_hormone_prediction(
     hormones_info,
 ):  # estrogen_slider, progesterone_slider, LH_slider, mesh_plot,
     """Return the content of the AI hormone prediction page."""
+    overview_text = dbc.Row(
+        [
+            html.P(
+                [
+                    html.Br(),
+                    "The hippocampus is a brain region that is particularly sensitive to hormones. In pregnancy the hippocampus volume is known to decrease, but we find that the shape of the hippocampus changes as well. We have trained an AI to predict the shape of the hippocampus based on hormone levels.",
+                    html.Br(),
+                ],
+                style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+            ),
+        ],
+    )
+
+    instructions_text = dbc.Row(
+        [
+            html.P(
+                [
+                    html.Br(),
+                    "Use the hormone sliders or the gestational weel slider to adjust observe the predicted shape changes in the left hippocampal formation.",
+                    html.Br(),
+                ],
+                style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+            ),
+        ],
+    )
+
+    acknowledgements_text = dbc.Row(
+        [
+            html.P(
+                [
+                    html.Br(),
+                    "Our AI was trained on data from the study: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)",
+                ],
+                style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+            ),
+        ],
+    )
+
     week_slider_card = dbc.Card(
         [
             html.Div(
@@ -680,18 +758,16 @@ def ai_hormone_prediction(
             [html.Br(), "AI: Hormones to Hippocampus Shape"],
             style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
         ),
-        html.P(
-            [
-                html.Br(),
-                "Even though the hippocampus volume not appear to change much in the MRI images, the hippocampus is experiencing major shape changes, which we have taught an AI to predict. Use the sliders to adjust the hormone levels and observe predicted shape changes in the left hippocampal formation.",
-            ],
-            style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
-        ),
     ]
 
     return dbc.Container(
         [
             *banner,
+            overview_title,
+            overview_text,
+            html.Hr(),
+            instructions_title,
+            instructions_text,
             dbc.Row(
                 [
                     dbc.Col(
@@ -714,7 +790,10 @@ def ai_hormone_prediction(
                     "marginTop": "50px",
                 },
             ),
-            html.Div(style={"height": "20px"}),
+            html.Div(style={"height": "100px"}),
+            html.Hr(),
+            acknowledgements_title,
+            acknowledgements_text,
         ],
         fluid=True,
     )
