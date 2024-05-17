@@ -29,24 +29,12 @@ SIDEBAR_STYLE = {
     "background-color": "#f8f9fa",
 }
 
-banner = [
-    html.Div(style={"height": "20px"}),
-    html.Img(
-        src="assets/herbrain_logo_text.png",
-        style={
-            "width": "80%",
-            "height": "auto",
-            "marginLeft": "10px",
-            "marginRight": "10px",
-        },
-    ),
-    html.Hr(),
-]
-
 margin_side = "20px"
 text_fontsize = "24px"
 text_fontfamily = "Avenir"
 title_fontsize = "40px"
+space_between_sections = "70px"
+space_between_title_and_content = "30px"
 
 img_herbrain = html.Img(
     src="assets/herbrain.png",
@@ -157,7 +145,7 @@ def sidebar():
             dbc.Col(
                 html.Img(
                     src="assets/wbhi_logo.png",
-                    style={"width": "50px", "height": "auto"},
+                    style={"width": "100px", "height": "auto"},
                 ),
                 width=2,
             ),
@@ -256,34 +244,72 @@ def sidebar():
 
 def homepage():
     """Return the content of the homepage."""
-    intro_text = html.P(
+    banner = [
+        html.Div(style={"height": "20px"}),
+        html.Img(
+            src="assets/herbrain_logo_text.png",
+            style={
+                "width": "80%",
+                "height": "auto",
+                "marginLeft": "10px",
+                "marginRight": "10px",
+            },
+        ),
+    ]
+
+    overview_text = html.P(
         [
-            html.Br(),
-            html.Br(),
-            # html.P("Overview", style={"fontSize": title_fontsize}),
-            overview_title,
-            html.Br(),
             "Welcome to HerBrain! This application is a tool to explore how the brain changes during pregnancy. Ovarian hormones, such as estrogen and progesterone, are known to influence the brain, and these hormones are elevated 100-1000 fold during pregnancy.",
             html.Br(),
             html.Br(),
             "The hippocampus and the structures around it are particularly sensitives to hormones. In pregnancy, sex hormones are believed to drive the decline in hippocampal volume that occurs during gestation.",
-            html.Br(),
-            html.Br(),
-            # html.P("Instructions", style={"fontSize": title_fontsize}),
-            html.Hr(),
-            instructions_title,
-            html.Br(),
+        ],
+        style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+    )
+
+    instructions_text = html.P(
+        [
             "Use the sidebar to navigate between the different pages of the application. The 'Explore MRI Data' page allows you to explore the brain MRIs from the study. The 'AI: Hormones to Hippocampus Shape' page allows you to explore the relationship between hormones and the shape of the hippocampus.",
-            html.Br(),
-            html.Br(),
-            # html.P("Acknowledgements", style={"fontSize": title_fontsize}),
-            html.Hr(),
-            acknowledgements_title,
-            html.Br(),
+        ],
+        style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+    )
+
+    acknowledgements_text = html.P(
+        [
             "This application was developed by Adele Myers and Nina Miolane and made possible by the support of the Women's Brain Health Initiative. Brain MRI data was collected in the study: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024).",
         ],
         style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
     )
+
+    # intro_text = html.P(
+    #     [
+    #         html.Br(),
+    #         html.Br(),
+    #         # html.P("Overview", style={"fontSize": title_fontsize}),
+    #         html.Hr(),
+    #         overview_title,
+    #         html.Br(),
+    #         "Welcome to HerBrain! This application is a tool to explore how the brain changes during pregnancy. Ovarian hormones, such as estrogen and progesterone, are known to influence the brain, and these hormones are elevated 100-1000 fold during pregnancy.",
+    #         html.Br(),
+    #         html.Br(),
+    #         "The hippocampus and the structures around it are particularly sensitives to hormones. In pregnancy, sex hormones are believed to drive the decline in hippocampal volume that occurs during gestation.",
+    #         html.Br(),
+    #         html.Br(),
+    #         # html.P("Instructions", style={"fontSize": title_fontsize}),
+    #         html.Hr(),
+    #         instructions_title,
+    #         html.Br(),
+    #         "Use the sidebar to navigate between the different pages of the application. The 'Explore MRI Data' page allows you to explore the brain MRIs from the study. The 'AI: Hormones to Hippocampus Shape' page allows you to explore the relationship between hormones and the shape of the hippocampus.",
+    #         html.Br(),
+    #         html.Br(),
+    #         # html.P("Acknowledgements", style={"fontSize": title_fontsize}),
+    #         html.Hr(),
+    #         acknowledgements_title,
+    #         html.Br(),
+    #         "This application was developed by Adele Myers and Nina Miolane and made possible by the support of the Women's Brain Health Initiative. Brain MRI data was collected in the study: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024).",
+    #     ],
+    #     style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
+    # )
 
     # intro_text_row = dbc.Row(
     #     [dbc.Col(img_herbrain, md=7), dbc.Col(md=1), dbc.Col(intro_text, md=3)],
@@ -293,16 +319,45 @@ def homepage():
         [dbc.Col(md=2), dbc.Col(img_herbrain, md=8), dbc.Col(md=2)],
         style={"marginLeft": margin_side, "marginRight": margin_side},
     )
-    intro_text_row = dbc.Row(
-        [dbc.Col(md=1), dbc.Col(intro_text, md=10), dbc.Col(md=1)],
-        style={"marginLeft": margin_side, "marginRight": margin_side},
-    )
+    # intro_text_row = dbc.Row(
+    #     [dbc.Col(md=1), dbc.Col(intro_text, md=10), dbc.Col(md=1)],
+    #     style={"marginLeft": margin_side, "marginRight": margin_side},
+    # )
 
-    return dbc.Container(
+    contents_container = dbc.Container(
         [
             *banner,
+            html.Hr(),
+            overview_title,
+            html.Div(style={"height": space_between_title_and_content}),
+            overview_text,
             brain_image_row,
-            intro_text_row,
+            html.Div(style={"height": space_between_sections}),
+            html.Hr(),
+            instructions_title,
+            html.Div(style={"height": space_between_title_and_content}),
+            instructions_text,
+            html.Div(style={"height": space_between_sections}),
+            html.Hr(),
+            acknowledgements_title,
+            html.Div(style={"height": space_between_title_and_content}),
+            acknowledgements_text,
+        ],
+        fluid=True,
+    )
+
+    # return dbc.Container(
+    #     [
+    #         *banner,
+    #         brain_image_row,
+    #         intro_text_row,
+    #     ]
+    # )
+    return dbc.Row(
+        [
+            dbc.Col(sm=1),
+            dbc.Col(contents_container, sm=10),
+            dbc.Col(sm=1),
         ]
     )
 
@@ -337,19 +392,38 @@ def explore_data(mri_coordinates_info, hormones_info):
         [dbc.Col(md=1), dbc.Col(img_study_timeline, md=10), dbc.Col(md=1)],
         style={"marginLeft": margin_side, "marginRight": margin_side},
     )
+
     banner = [
-        html.Div(style={"height": "20px"}),
-        html.P(
-            [html.Br(), "Explore Brain MRIs Throughout Pregnancy"],
-            style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
+        # html.P(
+        #     [html.Br(), "Explore Brain MRIs Throughout Pregnancy"],
+        #     style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
+        # ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Img(
+                        src="assets/brain_emoji.jpeg",
+                        style={"width": "100px", "height": "auto"},
+                    ),
+                    width=1,
+                ),
+                dbc.Col(
+                    html.P(
+                        "Explore Brain MRIs Throughout Pregnancy",
+                        style={"fontSize": title_fontsize},
+                    ),
+                    width=10,
+                ),
+            ],
+            align="center",
         ),
+        # html.Div(style={"height": "70px"}),
     ]
 
     overview_text = dbc.Row(
         [
             html.P(
                 [
-                    html.Br(),
                     "MRI data was collected ~ once every 2 weeks throughout pregnancy, showing the structural changes that occur in the brain over the course of a human pregnancy. Estrogen, progesterone, and LH levels were also measured at most sessions.",
                 ],
                 style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
@@ -362,10 +436,7 @@ def explore_data(mri_coordinates_info, hormones_info):
         [
             html.P(
                 [
-                    html.Br(),
                     "Use the 'Session Number' slider to flip through T1 brain data from each MRI session. Use the X, Y, Z coordinate sliders choose the MRI slice. Additional information about the session will be displayed to the right of the sliders.",
-                    html.Br(),
-                    html.Br(),
                 ],
                 style={
                     "fontSize": text_fontsize,
@@ -381,7 +452,6 @@ def explore_data(mri_coordinates_info, hormones_info):
         [
             html.P(
                 [
-                    html.Br(),
                     "Data and study timeline image from: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)",
                 ],
                 style={
@@ -544,11 +614,14 @@ def explore_data(mri_coordinates_info, hormones_info):
     contents_container = dbc.Container(
         [
             *banner,
+            html.Hr(),
             overview_title,
+            html.Div(style={"height": space_between_title_and_content}),
             overview_text,
-            dbc.Row(style={"height": "100px"}),
+            html.Div(style={"height": space_between_sections}),
             html.Hr(),
             instructions_title,
+            html.Div(style={"height": space_between_title_and_content}),
             instructions_text,
             dbc.Row(
                 [
@@ -575,9 +648,10 @@ def explore_data(mri_coordinates_info, hormones_info):
                     "marginTop": "50px",
                 },
             ),
-            dbc.Row(style={"height": "100px"}),
+            html.Div(style={"height": space_between_sections}),
             html.Hr(),
             acknowledgements_title,
+            html.Div(style={"height": space_between_title_and_content}),
             acknowledgements_text,
         ],
         fluid=True,
@@ -596,11 +670,37 @@ def ai_hormone_prediction(
     hormones_info,
 ):  # estrogen_slider, progesterone_slider, LH_slider, mesh_plot,
     """Return the content of the AI hormone prediction page."""
+    banner = [
+        # html.P(
+        #     [html.Br(), "Explore Brain MRIs Throughout Pregnancy"],
+        #     style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
+        # ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Img(
+                        src="assets/robot_emoji.jpeg",
+                        style={"width": "100px", "height": "auto"},
+                    ),
+                    width=1,
+                ),
+                dbc.Col(
+                    html.P(
+                        "AI: Hormones to Hippocampus Shape",
+                        style={"fontSize": title_fontsize},
+                    ),
+                    width=10,
+                ),
+            ],
+            align="center",
+        ),
+        # html.Div(style={"height": "70px"}),
+    ]
+
     overview_text = dbc.Row(
         [
             html.P(
                 [
-                    html.Br(),
                     "The hippocampus is a brain region that is particularly sensitive to hormones. In pregnancy the hippocampus volume is known to decrease, but we find that the shape of the hippocampus changes as well. We have trained an AI to predict the shape of the hippocampus based on hormone levels.",
                     html.Br(),
                 ],
@@ -613,7 +713,6 @@ def ai_hormone_prediction(
         [
             html.P(
                 [
-                    html.Br(),
                     "Use the hormone sliders or the gestational week slider to adjust observe the predicted shape changes in the left hippocampal formation.",
                     html.Br(),
                 ],
@@ -626,7 +725,6 @@ def ai_hormone_prediction(
         [
             html.P(
                 [
-                    html.Br(),
                     "Our AI was trained on data from the study: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)",
                 ],
                 style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
@@ -717,21 +815,25 @@ def ai_hormone_prediction(
         dbc.Row(hormone_sliders_card),
     ]
 
-    banner = [
-        html.Div(style={"height": "20px"}),
-        html.P(
-            [html.Br(), "AI: Hormones to Hippocampus Shape"],
-            style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
-        ),
-    ]
+    # banner = [
+    #     html.Div(style={"height": "20px"}),
+    #     html.P(
+    #         [html.Br(), "AI: Hormones to Hippocampus Shape"],
+    #         style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
+    #     ),
+    # ]
 
     contents_container = dbc.Container(
         [
             *banner,
+            html.Hr(),
             overview_title,
+            html.Div(style={"height": space_between_title_and_content}),
             overview_text,
+            html.Div(style={"height": space_between_sections}),
             html.Hr(),
             instructions_title,
+            html.Div(style={"height": space_between_title_and_content}),
             instructions_text,
             dbc.Row(
                 [
@@ -755,9 +857,10 @@ def ai_hormone_prediction(
                     "marginTop": "50px",
                 },
             ),
-            html.Div(style={"height": "100px"}),
+            html.Div(style={"height": space_between_sections}),
             html.Hr(),
             acknowledgements_title,
+            html.Div(style={"height": space_between_title_and_content}),
             acknowledgements_text,
         ],
         fluid=True,
