@@ -24,7 +24,7 @@ SIDEBAR_STYLE = {
     "top": 0,
     "left": 0,
     "bottom": 0,
-    "width": "16rem",
+    "width": "18rem",
     "padding": "2rem 1rem",
     "background-color": "#f8f9fa",
 }
@@ -56,6 +56,57 @@ img_herbrain = html.Img(
 img_study_timeline = html.Img(
     src="assets/study_timeline.png",
     style={"width": "100%", "height": "auto"},
+)
+
+instructions_title = dbc.Row(
+    [
+        dbc.Col(
+            html.Img(
+                src="assets/instructions_emoji.jpeg",
+                style={"width": "50px", "height": "auto"},
+            ),
+            width=2,
+        ),
+        dbc.Col(
+            html.P("Instructions", style={"fontSize": title_fontsize}),
+            width=10,
+        ),
+    ],
+    align="center",
+)
+
+overview_title = dbc.Row(
+    [
+        dbc.Col(
+            html.Img(
+                src="assets/overview_emoji.jpeg",
+                style={"width": "50px", "height": "auto"},
+            ),
+            width=2,
+        ),
+        dbc.Col(
+            html.P("Overview", style={"fontSize": title_fontsize}),
+            width=10,
+        ),
+    ],
+    align="center",
+)
+
+acknowledgements_title = dbc.Row(
+    [
+        dbc.Col(
+            html.Img(
+                src="assets/acknowledgements_emoji.jpeg",
+                style={"width": "50px", "height": "auto"},
+            ),
+            width=2,
+        ),
+        dbc.Col(
+            html.P("Acknowledgements", style={"fontSize": title_fontsize}),
+            width=10,
+        ),
+    ],
+    align="center",
 )
 
 
@@ -101,9 +152,82 @@ def slider(slider_name, slider_info):
 
 def sidebar():
     """Return the sidebar of the app."""
+    title = dbc.Row(
+        [
+            dbc.Col(
+                html.Img(
+                    src="assets/wbhi_logo.png",
+                    style={"width": "50px", "height": "auto"},
+                ),
+                width=2,
+            ),
+            dbc.Col(width=0.5),
+            dbc.Col(
+                html.H2("HerBrain", className="display-4"),
+                width=10,
+            ),
+        ],
+        align="center",
+    )
+
+    home_link = dbc.Row(
+        [
+            dbc.Col(
+                html.Img(
+                    src="assets/home_emoji.jpeg",
+                    style={"width": "30px", "height": "auto"},
+                ),
+                width=2,
+            ),
+            dbc.Col(
+                dbc.NavLink("Home", href="/", active="exact"),
+                width=10,
+            ),
+        ],
+        align="center",
+    )
+
+    mri_link = dbc.Row(
+        [
+            dbc.Col(
+                html.Img(
+                    src="assets/brain_emoji.jpeg",
+                    style={"width": "40px", "height": "auto"},
+                ),
+                width=2,
+                align="center",
+            ),
+            dbc.Col(
+                dbc.NavLink("Explore MRI Data", href="/page-1", active="exact"),
+                width=10,
+            ),
+        ],
+        align="center",
+    )
+
+    ai_link = dbc.Row(
+        [
+            dbc.Col(
+                html.Img(
+                    src="assets/robot_emoji.jpeg",
+                    style={"width": "40px", "height": "auto"},
+                ),
+                width=2,
+            ),
+            dbc.Col(
+                dbc.NavLink(
+                    "AI: Hormones to Hippocampus Shape", href="/page-2", active="exact"
+                ),
+                width=10,
+            ),
+        ],
+        align="center",
+    )
+
     return html.Div(
         [
-            html.H2("HerBrain", className="display-4"),
+            # html.H2("HerBrain", className="display-4"),
+            title,
             html.Hr(),
             html.P(
                 "Explore how the female brain changes during pregnancy",
@@ -111,13 +235,16 @@ def sidebar():
             ),
             dbc.Nav(
                 [
-                    dbc.NavLink("Home", href="/", active="exact"),
-                    dbc.NavLink("Explore MRI Data", href="/page-1", active="exact"),
-                    dbc.NavLink(
-                        "AI: Hormones to Hippocampus Shape",
-                        href="/page-2",
-                        active="exact",
-                    ),
+                    # dbc.NavLink("Home", href="/", active="exact"),
+                    home_link,
+                    # dbc.NavLink("Explore MRI Data", href="/page-1", active="exact"),
+                    mri_link,
+                    # dbc.NavLink(
+                    #     "AI: Hormones to Hippocampus Shape",
+                    #     href="/page-2",
+                    #     active="exact",
+                    # ),
+                    ai_link,
                 ],
                 vertical=True,
                 pills=True,
@@ -132,13 +259,26 @@ def homepage():
     intro_text = html.P(
         [
             html.Br(),
-            "The hippocampus and the structures around it are particularly sensitives to hormones.",
+            html.Br(),
+            # html.P("Overview", style={"fontSize": title_fontsize}),
+            overview_title,
+            html.Br(),
+            "Welcome to HerBrain! This application is a tool to explore how the brain changes during pregnancy. Ovarian hormones, such as estrogen and progesterone, are known to influence the brain, and these hormones are elevated 100-1000 fold during pregnancy.",
             html.Br(),
             html.Br(),
-            "In pregnancy, sex hormones are believed to drive the decline in hippocampal volume that occurs during gestation.",
+            "The hippocampus and the structures around it are particularly sensitives to hormones. In pregnancy, sex hormones are believed to drive the decline in hippocampal volume that occurs during gestation.",
             html.Br(),
             html.Br(),
-            "This application predicts the shape changes occuring in the hippocampus during pregnancy based on hormone levels.",
+            # html.P("Instructions", style={"fontSize": title_fontsize}),
+            instructions_title,
+            html.Br(),
+            "Use the sidebar to navigate between the different pages of the application. The 'Explore MRI Data' page allows you to explore the brain MRIs from the study. The 'AI: Hormones to Hippocampus Shape' page allows you to explore the relationship between hormones and the shape of the hippocampus.",
+            html.Br(),
+            html.Br(),
+            # html.P("Acknowledgements", style={"fontSize": title_fontsize}),
+            acknowledgements_title,
+            html.Br(),
+            "This application was developed by Adele Myers and Nina Miolane and made possible by the support of the Women's Brain Health Initiative. Brain MRI data was collected in the study: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024).",
         ],
         style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
     )
@@ -147,7 +287,7 @@ def homepage():
     #     [dbc.Col(img_herbrain, md=7), dbc.Col(md=1), dbc.Col(intro_text, md=3)],
     #     style={"marginLeft": margin_side, "marginRight": margin_side},
     # )
-    intro_image_row = dbc.Row(
+    brain_image_row = dbc.Row(
         [dbc.Col(md=2), dbc.Col(img_herbrain, md=8), dbc.Col(md=2)],
         style={"marginLeft": margin_side, "marginRight": margin_side},
     )
@@ -159,7 +299,7 @@ def homepage():
     return dbc.Container(
         [
             *banner,
-            intro_image_row,
+            brain_image_row,
             intro_text_row,
         ]
     )

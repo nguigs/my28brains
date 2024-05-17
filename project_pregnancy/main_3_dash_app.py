@@ -386,16 +386,6 @@ def update_nii_plot(scan_number, x, y, z):  # week,
     endo_status = sess_df["EndoStatus"].values[0]
     trimester = sess_df["trimester"].values[0]
 
-    # session_info_text = html.P(
-    #     f"Session Number: {scan_number},\n"
-    #     f"Gestational Week: {gest_week},\n"
-    #     f"Estrogen pg/ml: {estrogen},\n"
-    #     f"Progesterone ng/ml: {progesterone},\n"
-    #     f"LH ng/ml: {LH},\n"
-    #     f"Pregnancy Status: {endo_status},\n"
-    #     f"Trimester: {trimester}"
-    # )
-
     session_number_text = f"Session Number: {scan_number}"
     gest_week_text = f"Gestational Week: {gest_week}"
     estrogen_text = f"Estrogen pg/ml: {estrogen}"
