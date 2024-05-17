@@ -79,9 +79,6 @@ def train_lr_model(X, mesh_sequence_vertices, n_X, p_values=False):
 
 
 def predict_mesh(
-    # estrogen,
-    # progesterone,
-    # LH,
     X,
     lr,
     pca,
@@ -94,10 +91,6 @@ def predict_mesh(
     relayoutData=None,
 ):
     """Predict the mesh based on the hormone values."""
-    # Predict Mesh
-    # X_multiple = gs.array([[estrogen, progesterone, LH]])
-    # y_pca_pred = lr.predict(X_multiple)
-
     y_pca_pred = lr.predict(X)
 
     y_pred = pca.inverse_transform(y_pca_pred) + y_mean.numpy()

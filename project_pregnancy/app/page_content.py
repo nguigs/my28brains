@@ -214,7 +214,6 @@ def sidebar():
 
     return html.Div(
         [
-            # html.H2("HerBrain", className="display-4"),
             title,
             html.Hr(),
             html.P(
@@ -223,15 +222,8 @@ def sidebar():
             ),
             dbc.Nav(
                 [
-                    # dbc.NavLink("Home", href="/", active="exact"),
                     home_link,
-                    # dbc.NavLink("Explore MRI Data", href="/page-1", active="exact"),
                     mri_link,
-                    # dbc.NavLink(
-                    #     "AI: Hormones to Hippocampus Shape",
-                    #     href="/page-2",
-                    #     active="exact",
-                    # ),
                     ai_link,
                 ],
                 vertical=True,
@@ -281,48 +273,10 @@ def homepage():
         style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
     )
 
-    # intro_text = html.P(
-    #     [
-    #         html.Br(),
-    #         html.Br(),
-    #         # html.P("Overview", style={"fontSize": title_fontsize}),
-    #         html.Hr(),
-    #         overview_title,
-    #         html.Br(),
-    #         "Welcome to HerBrain! This application is a tool to explore how the brain changes during pregnancy. Ovarian hormones, such as estrogen and progesterone, are known to influence the brain, and these hormones are elevated 100-1000 fold during pregnancy.",
-    #         html.Br(),
-    #         html.Br(),
-    #         "The hippocampus and the structures around it are particularly sensitives to hormones. In pregnancy, sex hormones are believed to drive the decline in hippocampal volume that occurs during gestation.",
-    #         html.Br(),
-    #         html.Br(),
-    #         # html.P("Instructions", style={"fontSize": title_fontsize}),
-    #         html.Hr(),
-    #         instructions_title,
-    #         html.Br(),
-    #         "Use the sidebar to navigate between the different pages of the application. The 'Explore MRI Data' page allows you to explore the brain MRIs from the study. The 'AI: Hormones to Hippocampus Shape' page allows you to explore the relationship between hormones and the shape of the hippocampus.",
-    #         html.Br(),
-    #         html.Br(),
-    #         # html.P("Acknowledgements", style={"fontSize": title_fontsize}),
-    #         html.Hr(),
-    #         acknowledgements_title,
-    #         html.Br(),
-    #         "This application was developed by Adele Myers and Nina Miolane and made possible by the support of the Women's Brain Health Initiative. Brain MRI data was collected in the study: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024).",
-    #     ],
-    #     style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
-    # )
-
-    # intro_text_row = dbc.Row(
-    #     [dbc.Col(img_herbrain, md=7), dbc.Col(md=1), dbc.Col(intro_text, md=3)],
-    #     style={"marginLeft": margin_side, "marginRight": margin_side},
-    # )
     brain_image_row = dbc.Row(
         [dbc.Col(md=2), dbc.Col(img_herbrain, md=8), dbc.Col(md=2)],
         style={"marginLeft": margin_side, "marginRight": margin_side},
     )
-    # intro_text_row = dbc.Row(
-    #     [dbc.Col(md=1), dbc.Col(intro_text, md=10), dbc.Col(md=1)],
-    #     style={"marginLeft": margin_side, "marginRight": margin_side},
-    # )
 
     contents_container = dbc.Container(
         [
@@ -346,13 +300,6 @@ def homepage():
         fluid=True,
     )
 
-    # return dbc.Container(
-    #     [
-    #         *banner,
-    #         brain_image_row,
-    #         intro_text_row,
-    #     ]
-    # )
     return dbc.Row(
         [
             dbc.Col(sm=1),
@@ -384,20 +331,12 @@ def coordinate_slider(coordinate_name, mri_coordinates_info):
 
 def explore_data(mri_coordinates_info, hormones_info):
     """Return the content of the data exploration page."""
-    # citation_text = html.P(
-    #     [html.Br(), "Study Timeline From: Pritschet, Taylor, Cossio, Santander, Grotzinger, Faskowitz, Handwerker, Layher, Chrastil, Jacobs. Neuroanatomical changes observed over the course of a human pregnancy. (2024)"],
-    #     style={"fontSize": text_fontsize, "fontFamily": text_fontfamily, "marginLeft": margin_side, "marginRight": margin_side},
-    # ),
     study_row = dbc.Row(
         [dbc.Col(md=1), dbc.Col(img_study_timeline, md=10), dbc.Col(md=1)],
         style={"marginLeft": margin_side, "marginRight": margin_side},
     )
 
     banner = [
-        # html.P(
-        #     [html.Br(), "Explore Brain MRIs Throughout Pregnancy"],
-        #     style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
-        # ),
         dbc.Row(
             [
                 dbc.Col(
@@ -417,7 +356,6 @@ def explore_data(mri_coordinates_info, hormones_info):
             ],
             align="center",
         ),
-        # html.Div(style={"height": "70px"}),
     ]
 
     overview_text = dbc.Row(
@@ -625,7 +563,7 @@ def explore_data(mri_coordinates_info, hormones_info):
             instructions_text,
             dbc.Row(
                 [
-                    dbc.Col(plots_card, sm=14),  # ,  , width=100),
+                    dbc.Col(plots_card, sm=14),
                 ],
                 align="center",
                 style={
@@ -636,9 +574,7 @@ def explore_data(mri_coordinates_info, hormones_info):
             ),
             dbc.Row(
                 [
-                    # dbc.Col(sm=1, width=100),
                     dbc.Col(sliders_column, sm=7, width=700),
-                    # dbc.Col(sm=1, width=100),
                     dbc.Col(sess_info_card, sm=4, width=700),
                 ],
                 align="center",
@@ -668,13 +604,9 @@ def explore_data(mri_coordinates_info, hormones_info):
 
 def ai_hormone_prediction(
     hormones_info,
-):  # estrogen_slider, progesterone_slider, LH_slider, mesh_plot,
+):
     """Return the content of the AI hormone prediction page."""
     banner = [
-        # html.P(
-        #     [html.Br(), "Explore Brain MRIs Throughout Pregnancy"],
-        #     style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
-        # ),
         dbc.Row(
             [
                 dbc.Col(
@@ -694,7 +626,6 @@ def ai_hormone_prediction(
             ],
             align="center",
         ),
-        # html.Div(style={"height": "70px"}),
     ]
 
     overview_text = dbc.Row(
@@ -774,7 +705,6 @@ def ai_hormone_prediction(
                                     "display": "block",
                                 },
                             ),
-                            # estrogen_slider,
                             slider("estrogen", hormones_info),
                             dbc.Label(
                                 "Progesterone ng/ml",
@@ -784,7 +714,6 @@ def ai_hormone_prediction(
                                     "display": "block",
                                 },
                             ),
-                            # progesterone_slider,
                             slider("progesterone", hormones_info),
                             dbc.Label(
                                 "LH ng/ml",
@@ -794,7 +723,6 @@ def ai_hormone_prediction(
                                     "display": "block",
                                 },
                             ),
-                            # LH_slider,
                             slider("LH", hormones_info),
                         ],
                         gap=3,
@@ -815,14 +743,6 @@ def ai_hormone_prediction(
         dbc.Row(hormone_sliders_card),
     ]
 
-    # banner = [
-    #     html.Div(style={"height": "20px"}),
-    #     html.P(
-    #         [html.Br(), "AI: Hormones to Hippocampus Shape"],
-    #         style={"fontSize": title_fontsize, "fontFamily": text_fontfamily},
-    #     ),
-    # ]
-
     contents_container = dbc.Container(
         [
             *banner,
@@ -841,9 +761,7 @@ def ai_hormone_prediction(
                         html.Div(
                             dcc.Graph(id="mesh-plot"),
                             style={"paddingTop": "0px"},
-                            # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
                         ),
-                        # mesh_plot,
                         sm=4,
                         width=700,
                     ),

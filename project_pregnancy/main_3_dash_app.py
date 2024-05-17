@@ -65,14 +65,6 @@ X_hormones_mean = X_hormones.mean(axis=0)
     mesh_neighbors_hormones,
 ) = calculations.train_lr_model(X_hormones, mesh_sequence_vertices, n_hormones)
 
-# X_gest_week = hormones_df["gestWeek"].values
-# X_gest_week_reshaped = X_gest_week.reshape(-1, 1)
-
-# lr_gest_week, pca_gest_week, y_mean_gest_week, n_vertices_gest_week, mesh_neighbors_gest_week = calculations.train_lr_model(
-#     X_gest_week_reshaped, mesh_sequence_vertices, 1
-# )
-
-
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -138,8 +130,6 @@ mri_coordinates_info = {
     },
 }
 
-# fig_df  = calculations.pre_calculate_mri_figs(raw_mri_dict, mri_coordinates_info)
-
 sidebar = page_content.sidebar()
 
 home_page = page_content.homepage()
@@ -192,8 +182,6 @@ def linear_interpolation(x_lower, x_higher, y_lower, y_upper, x_input):
 def interpolate_or_return(df, x, x_label, y_label):
     """Interpolate or return the y value based on the x value."""
     print("interpolating")
-    # Sort dataframe by 'x' column
-    # df = df.sort_values(by='x')
 
     # Extract x and y values from dataframe
     x_values = df[x_label].values
@@ -259,20 +247,6 @@ def update_mesh(
         gest_week_slider_style = {"display": "none"}
         hormone_week_slider_style = {"display": "block"}
 
-        # X_multiple = gs.array([[estrogen, progesterone, LH]])
-
-        # mesh_plot = calculations.predict_mesh(
-        #     X_multiple,
-        #     lr_hormones,
-        #     pca_hormones,
-        #     y_mean_hormones,
-        #     n_vertices_hormones,
-        #     mesh_neighbors_hormones,
-        #     space,
-        #     vertex_colors,
-        #     current_figure=current_figure,
-        #     relayoutData=relayoutData,
-        # )
     else:
         gest_week_slider_style = {"display": "block"}
         hormone_week_slider_style = {"display": "none"}
@@ -292,31 +266,6 @@ def update_mesh(
         print("estrogen", estrogen)
         print("LH", LH)
         print("gest_week", gest_week)
-
-        # X = gs.array(gest_week).reshape(-1, 1)
-        # print(X)
-
-        # all_gest_week = hormones_df['gestWeek'].values
-        # all_progesterone = hormones_df['progesterone'].values
-        # all_estrogen = hormones_df['estrogen'].values
-        # all_lh = hormones_df['lh'].values
-
-        # progesterone = interp1d(all_gest_week, progesterone_values, kind='linear', fill_value="extrapolate")
-        # interp_estrogen = interp1d(gestWeek_values, estrogen_values, kind='linear', fill_value="extrapolate")
-        # interp_lh = interp1d(gestWeek_values, lh_values, kind='linear', fill_value="extrapolate")
-
-        # mesh_plot = calculations.predict_mesh(
-        #     X,
-        #     lr_gest_week,
-        #     pca_gest_week,
-        #     y_mean_gest_week,
-        #     n_vertices_gest_week,
-        #     mesh_neighbors_gest_week,
-        #     space,
-        #     vertex_colors,
-        #     current_figure=current_figure,
-        #     relayoutData=relayoutData,
-        # )
 
     X_multiple = gs.array([[estrogen, progesterone, LH]])
 
