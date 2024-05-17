@@ -541,50 +541,7 @@ def explore_data(mri_coordinates_info, hormones_info):
         },
     )
 
-    # plots_card = dbc.Card(
-    #     [
-    #         dbc.Row(
-    #             [
-    #                 dbc.Col(
-    #                     html.Div(
-    #                         dcc.Graph(id="nii-plot-side", config={"displayModeBar": False}),
-    #                         style={"paddingTop": "0px"},
-    #                         # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
-    #                     ),
-    #                     sm=4, #sm=5,
-    #                     # width=1000,
-    #                 ),
-    #                 dbc.Col(
-    #                     html.Div(
-    #                         dcc.Graph(id="nii-plot-front", config={"displayModeBar": False}),
-    #                         style={"paddingTop": "0px"},
-    #                         # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
-    #                     ),
-    #                     sm=4, #sm=3,
-    #                     # width=550,
-    #                 ),
-    #                 dbc.Col(
-    #                     html.Div(
-    #                         dcc.Graph(id="nii-plot-top", config={"displayModeBar": False}),
-    #                         style={"paddingTop": "0px"},
-    #                         # style={'width': '49%', 'display': 'inline-block', 'vertical-align': 'bottom'}
-    #                     ),
-    #                     sm=4, #sm=3,
-    #                     # width=550,
-    #                 ),
-    #             ],
-    #             align="center",
-    #             style={
-    #                 "marginLeft": margin_side,
-    #                 "marginRight": margin_side,
-    #                 "marginTop": "50px",
-    #             },
-    #         ),
-    #     ],
-    #     body=True,
-    # )
-
-    return dbc.Container(
+    contents_container = dbc.Container(
         [
             *banner,
             overview_title,
@@ -626,6 +583,14 @@ def explore_data(mri_coordinates_info, hormones_info):
         fluid=True,
     )
 
+    return dbc.Row(
+        [
+            dbc.Col(sm=1),
+            dbc.Col(contents_container, sm=10),
+            dbc.Col(sm=1),
+        ]
+    )
+
 
 def ai_hormone_prediction(
     hormones_info,
@@ -649,7 +614,7 @@ def ai_hormone_prediction(
             html.P(
                 [
                     html.Br(),
-                    "Use the hormone sliders or the gestational weel slider to adjust observe the predicted shape changes in the left hippocampal formation.",
+                    "Use the hormone sliders or the gestational week slider to adjust observe the predicted shape changes in the left hippocampal formation.",
                     html.Br(),
                 ],
                 style={"fontSize": text_fontsize, "fontFamily": text_fontfamily},
@@ -760,7 +725,7 @@ def ai_hormone_prediction(
         ),
     ]
 
-    return dbc.Container(
+    contents_container = dbc.Container(
         [
             *banner,
             overview_title,
@@ -796,4 +761,12 @@ def ai_hormone_prediction(
             acknowledgements_text,
         ],
         fluid=True,
+    )
+
+    return dbc.Row(
+        [
+            dbc.Col(sm=1),
+            dbc.Col(contents_container, sm=10),
+            dbc.Col(sm=1),
+        ]
     )
