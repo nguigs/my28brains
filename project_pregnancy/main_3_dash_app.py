@@ -65,14 +65,6 @@ X_hormones_mean = X_hormones.mean(axis=0)
     mesh_neighbors_hormones,
 ) = calculations.train_lr_model(X_hormones, mesh_sequence_vertices, n_hormones)
 
-# X_gest_week = hormones_df["gestWeek"].values
-# X_gest_week_reshaped = X_gest_week.reshape(-1, 1)
-
-# lr_gest_week, pca_gest_week, y_mean_gest_week, n_vertices_gest_week, mesh_neighbors_gest_week = calculations.train_lr_model(
-#     X_gest_week_reshaped, mesh_sequence_vertices, 1
-# )
-
-
 app = Dash(
     __name__,
     external_stylesheets=[dbc.themes.BOOTSTRAP],
@@ -121,24 +113,22 @@ mri_coordinates_info = {
     "x": {
         "min_value": 0 + trim_x,
         "max_value": raw_mri_dict[0].shape[0] - 1 - trim_x - 20,
-        "mean_value": 0 + trim_x,
+        "mean_value": 110,
         "step": step,
     },
     "y": {
         "min_value": 0 + trim_y,
         "max_value": raw_mri_dict[0].shape[1] - 1 - trim_y,
-        "mean_value": 0 + trim_x,
+        "mean_value": 100,
         "step": step,
     },
     "z": {
         "min_value": 0 + trim_z,
         "max_value": raw_mri_dict[0].shape[2] - 1 - trim_z,
-        "mean_value": 0 + trim_x,
+        "mean_value": 170,
         "step": step,
     },
 }
-
-# fig_df  = calculations.pre_calculate_mri_figs(raw_mri_dict, mri_coordinates_info)
 
 sidebar = page_content.sidebar()
 
@@ -192,8 +182,6 @@ def linear_interpolation(x_lower, x_higher, y_lower, y_upper, x_input):
 def interpolate_or_return(df, x, x_label, y_label):
     """Interpolate or return the y value based on the x value."""
     print("interpolating")
-    # Sort dataframe by 'x' column
-    # df = df.sort_values(by='x')
 
     # Extract x and y values from dataframe
     x_values = df[x_label].values
@@ -259,20 +247,6 @@ def update_mesh(
         gest_week_slider_style = {"display": "none"}
         hormone_week_slider_style = {"display": "block"}
 
-        # X_multiple = gs.array([[estrogen, progesterone, LH]])
-
-        # mesh_plot = calculations.predict_mesh(
-        #     X_multiple,
-        #     lr_hormones,
-        #     pca_hormones,
-        #     y_mean_hormones,
-        #     n_vertices_hormones,
-        #     mesh_neighbors_hormones,
-        #     space,
-        #     vertex_colors,
-        #     current_figure=current_figure,
-        #     relayoutData=relayoutData,
-        # )
     else:
         gest_week_slider_style = {"display": "block"}
         hormone_week_slider_style = {"display": "none"}
@@ -292,31 +266,6 @@ def update_mesh(
         print("estrogen", estrogen)
         print("LH", LH)
         print("gest_week", gest_week)
-
-        # X = gs.array(gest_week).reshape(-1, 1)
-        # print(X)
-
-        # all_gest_week = hormones_df['gestWeek'].values
-        # all_progesterone = hormones_df['progesterone'].values
-        # all_estrogen = hormones_df['estrogen'].values
-        # all_lh = hormones_df['lh'].values
-
-        # progesterone = interp1d(all_gest_week, progesterone_values, kind='linear', fill_value="extrapolate")
-        # interp_estrogen = interp1d(gestWeek_values, estrogen_values, kind='linear', fill_value="extrapolate")
-        # interp_lh = interp1d(gestWeek_values, lh_values, kind='linear', fill_value="extrapolate")
-
-        # mesh_plot = calculations.predict_mesh(
-        #     X,
-        #     lr_gest_week,
-        #     pca_gest_week,
-        #     y_mean_gest_week,
-        #     n_vertices_gest_week,
-        #     mesh_neighbors_gest_week,
-        #     space,
-        #     vertex_colors,
-        #     current_figure=current_figure,
-        #     relayoutData=relayoutData,
-        # )
 
     X_multiple = gs.array([[estrogen, progesterone, LH]])
 
@@ -343,7 +292,13 @@ def update_mesh(
         Output("nii-plot-side", "figure"),
         Output("nii-plot-front", "figure"),
         Output("nii-plot-top", "figure"),
-        Output("session-info", "children"),
+        Output("session-number", "children"),
+        Output("gest-week", "children"),
+        Output("estrogen-level", "children"),
+        Output("progesterone-level", "children"),
+        Output("LH-level", "children"),
+        Output("endo-status", "children"),
+        Output("trimester", "children"),
     ],
     Input("scan-number-slider", "drag_value"),
     Input("x-slider", "drag_value"),
@@ -353,7 +308,18 @@ def update_mesh(
 def update_nii_plot(scan_number, x, y, z):  # week,
     """Update the nii plot based on the week and the x, y, z coordinates."""
     if scan_number is None:
-        return go.Figure(), go.Figure(), go.Figure(), "Please select a scan number."
+        return (
+            go.Figure(),
+            go.Figure(),
+            go.Figure(),
+            "Please select a scan number.",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+        )
 
     side_fig, front_fig, top_fig = calculations.return_nii_plot(
         scan_number, x, y, z, raw_mri_dict
@@ -369,27 +335,26 @@ def update_nii_plot(scan_number, x, y, z):  # week,
     endo_status = sess_df["EndoStatus"].values[0]
     trimester = sess_df["trimester"].values[0]
 
-    # session_info = {
-    #     "Session Number": scan_number,
-    #     "Gestational Week": gest_week,
-    #     "Estrogen": estrogen,
-    #     "Progesterone": progesterone,
-    #     "LH": LH,
-    #     "Pregnancy Status": endo_status,
-    #     "Trimester": trimester,
-    # }
+    session_number_text = f"Session Number: {scan_number}"
+    gest_week_text = f"Gestational Week: {gest_week}"
+    estrogen_text = f"Estrogen pg/ml: {estrogen}"
+    progesterone_text = f"Progesterone ng/ml: {progesterone}"
+    LH_text = f"LH ng/ml: {LH}"
+    endo_status_text = f"Pregnancy Status: {endo_status}"
+    trimester_text = f"Trimester: {trimester}"
 
-    session_info_text = (
-        f"Session Number: {scan_number},\n"
-        f"Gestational Week: {gest_week},\n"
-        f"Estrogen pg/ml: {estrogen},\n"
-        f"Progesterone ng/ml: {progesterone},\n"
-        f"LH ng/ml: {LH},\n"
-        f"Pregnancy Status: {endo_status},\n"
-        f"Trimester: {trimester}"
+    return (
+        side_fig,
+        front_fig,
+        top_fig,
+        session_number_text,
+        gest_week_text,
+        estrogen_text,
+        progesterone_text,
+        LH_text,
+        endo_status_text,
+        trimester_text,
     )
-
-    return side_fig, front_fig, top_fig, session_info_text
 
 
 if __name__ == "__main__":

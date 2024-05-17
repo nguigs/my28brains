@@ -79,9 +79,6 @@ def train_lr_model(X, mesh_sequence_vertices, n_X, p_values=False):
 
 
 def predict_mesh(
-    # estrogen,
-    # progesterone,
-    # LH,
     X,
     lr,
     pca,
@@ -94,10 +91,6 @@ def predict_mesh(
     relayoutData=None,
 ):
     """Predict the mesh based on the hormone values."""
-    # Predict Mesh
-    # X_multiple = gs.array([[estrogen, progesterone, LH]])
-    # y_pca_pred = lr.predict(X_multiple)
-
     y_pca_pred = lr.predict(X)
 
     y_pred = pca.inverse_transform(y_pca_pred) + y_mean.numpy()
@@ -158,14 +151,12 @@ def plot_slice_as_plotly(
 ):
     """Display an image slice as a Plotly figure."""
     # Create heatmap trace for the current slice
-    heatmap_trace = go.Heatmap(
-        z=one_slice.T, colorscale=cmap, showscale=False
-    )  # , zmin=0, zmax=1)
+    heatmap_trace = go.Heatmap(z=one_slice.T, colorscale=cmap, showscale=False)
 
-    print("one slice shape:", one_slice.shape)
+    print("One slice shape:", one_slice.shape)
 
-    width = len(one_slice[:, 0]) * 2
-    height = len(one_slice[0]) * 2
+    width = int(len(one_slice[:, 0]) * 1.5)
+    height = int(len(one_slice[0]) * 1.5)
     print("Width:", width, "Height:", height)
 
     layout = go.Layout(
@@ -173,8 +164,8 @@ def plot_slice_as_plotly(
         title_x=0.5,
         xaxis=dict(title=x_label),
         yaxis=dict(title=y_label),
-        width=int(width),
-        height=int(height),
+        width=width,
+        height=height,
     )
 
     # Create a Plotly figure with the heatmap trace
@@ -188,90 +179,95 @@ def plot_slice_as_plotly(
 
 def return_nii_plot(sess_number, x, y, z, raw_mri_dict):  # week,
     """Return the nii plot based on the week and the x, y, z coordinates."""
-    # PREGNANCY_DIR = "/home/data/pregnancy"
-    # img_path = os.path.join(PREGNANCY_DIR, "BrainNormalizedToTemplate.nii.gz")
-    # img = nib.load(img_path)
-    # img_data = img.get_fdata()
-
-    # slice_0 = img_data[x, :, :]  # was 206
-    # slice_1 = img_data[:, y, :]  # was 130
-    # slice_2 = img_data[:, :, z]  # was 160
-
     slice_0 = raw_mri_dict[sess_number][x, :, :]
     slice_1 = raw_mri_dict[sess_number][:, y, :]
     slice_2 = raw_mri_dict[sess_number][:, :, z]
 
+    common_width = max(len(slice_0[:, 0]), len(slice_1[:, 0]), len(slice_2[:, 0]))
+    common_height = max(len(slice_0[0]), len(slice_1[0]), len(slice_2[0]))
+
+    slices = [slice_0, slice_1, slice_2]
+    for i_slice, slice in enumerate([slice_0, slice_1, slice_2]):
+        if len(slice[:, 0]) < common_width:
+            diff = common_width - len(slice[:, 0])
+            slice = np.pad(slice, ((0, diff), (0, 0)), mode="constant")
+            slices[i_slice] = slice
+        if len(slice[0]) < common_height:
+            diff = common_height - len(slice[0])
+            slice = np.pad(slice, ((0, 0), (0, diff)), mode="constant")
+            slices[i_slice] = slice
+
     side_fig = plot_slice_as_plotly(
-        slice_0, cmap="gray", title="Side View", x_label="Y", y_label="Z"
+        slices[0], cmap="gray", title="Side View", x_label="Y", y_label="Z"
     )
     front_fig = plot_slice_as_plotly(
-        slice_1, cmap="gray", title="Front View", x_label="X", y_label="Z"
+        slices[1], cmap="gray", title="Front View", x_label="X", y_label="Z"
     )
     top_fig = plot_slice_as_plotly(
-        slice_2, cmap="gray", title="Top View", x_label="X", y_label="Y"
+        slices[2], cmap="gray", title="Top View", x_label="X", y_label="Y"
     )
 
     return side_fig, front_fig, top_fig
 
 
-def pre_calculate_mri_figs(raw_mri_dict, mri_coordinates_info):
-    """Pre-calculate the slices of the MRI image."""
-    # pre-calculate side view mri figs
+# def pre_calculate_mri_figs(raw_mri_dict, mri_coordinates_info):
+#     """Pre-calculate the slices of the MRI image."""
+#     # pre-calculate side view mri figs
 
-    fig_dict = []
-    for week in raw_mri_dict.keys():
-        print("Calculating MRI figures for week", week)
-        x_values = gs.arange(
-            mri_coordinates_info["x"]["min_value"],
-            mri_coordinates_info["x"]["max_value"],
-            mri_coordinates_info["x"]["step"],
-        )
-        for x in x_values:
-            y_values = gs.arange(
-                mri_coordinates_info["y"]["min_value"],
-                mri_coordinates_info["y"]["max_value"],
-                mri_coordinates_info["y"]["step"],
-            )
-            for y in y_values:
-                z_values = gs.arange(
-                    mri_coordinates_info["z"]["min_value"],
-                    mri_coordinates_info["z"]["max_value"],
-                    mri_coordinates_info["z"]["step"],
-                )
-                for z in z_values:
-                    slice_0 = raw_mri_dict[week][x, :, :]
-                    slice_1 = raw_mri_dict[week][:, y, :]
-                    slice_2 = raw_mri_dict[week][:, :, z]
+#     fig_dict = []
+#     for week in raw_mri_dict.keys():
+#         print("Calculating MRI figures for week", week)
+#         x_values = gs.arange(
+#             mri_coordinates_info["x"]["min_value"],
+#             mri_coordinates_info["x"]["max_value"],
+#             mri_coordinates_info["x"]["step"],
+#         )
+#         for x in x_values:
+#             y_values = gs.arange(
+#                 mri_coordinates_info["y"]["min_value"],
+#                 mri_coordinates_info["y"]["max_value"],
+#                 mri_coordinates_info["y"]["step"],
+#             )
+#             for y in y_values:
+#                 z_values = gs.arange(
+#                     mri_coordinates_info["z"]["min_value"],
+#                     mri_coordinates_info["z"]["max_value"],
+#                     mri_coordinates_info["z"]["step"],
+#                 )
+#                 for z in z_values:
+#                     slice_0 = raw_mri_dict[week][x, :, :]
+#                     slice_1 = raw_mri_dict[week][:, y, :]
+#                     slice_2 = raw_mri_dict[week][:, :, z]
 
-                    side_fig = plot_slice_as_plotly(
-                        slice_0,
-                        cmap="gray",
-                        title="Side View",
-                        x_label="Y",
-                        y_label="Z",
-                    )
-                    front_fig = plot_slice_as_plotly(
-                        slice_1,
-                        cmap="gray",
-                        title="Front View",
-                        x_label="X",
-                        y_label="Z",
-                    )
-                    top_fig = plot_slice_as_plotly(
-                        slice_2, cmap="gray", title="Top View", x_label="X", y_label="Y"
-                    )
-                    print("Week", week, "x", x, "y", y, "z", z)
+#                     side_fig = plot_slice_as_plotly(
+#                         slice_0,
+#                         cmap="gray",
+#                         title="Side View",
+#                         x_label="Y",
+#                         y_label="Z",
+#                     )
+#                     front_fig = plot_slice_as_plotly(
+#                         slice_1,
+#                         cmap="gray",
+#                         title="Front View",
+#                         x_label="X",
+#                         y_label="Z",
+#                     )
+#                     top_fig = plot_slice_as_plotly(
+#                         slice_2, cmap="gray", title="Top View", x_label="X", y_label="Y"
+#                     )
+#                     print("Week", week, "x", x, "y", y, "z", z)
 
-                    fig_dict.append(
-                        {
-                            "week": week,
-                            "x": x,
-                            "y": y,
-                            "z": z,
-                            "side_fig": side_fig,
-                            "front_fig": front_fig,
-                            "top_fig": top_fig,
-                        }
-                    )
-    fig_df = pd.DataFrame(fig_dict)
-    return fig_df
+#                     fig_dict.append(
+#                         {
+#                             "week": week,
+#                             "x": x,
+#                             "y": y,
+#                             "z": z,
+#                             "side_fig": side_fig,
+#                             "front_fig": front_fig,
+#                             "top_fig": top_fig,
+#                         }
+#                     )
+#     fig_df = pd.DataFrame(fig_dict)
+#     return fig_df
