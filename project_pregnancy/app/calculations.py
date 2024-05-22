@@ -190,11 +190,13 @@ def return_nii_plot(sess_number, x, y, z, raw_mri_dict):  # week,
     for i_slice, slice in enumerate([slice_0, slice_1, slice_2]):
         if len(slice[:, 0]) < common_width:
             diff = common_width - len(slice[:, 0])
-            slice = np.pad(slice, ((0, diff), (0, 0)), mode="constant")
+            # slice = np.pad(slice, ((0, diff), (0, 0)), mode="constant")
+            slice = np.pad(slice, ((diff // 2, diff // 2), (0, 0)), mode="constant")
             slices[i_slice] = slice
         if len(slice[0]) < common_height:
             diff = common_height - len(slice[0])
-            slice = np.pad(slice, ((0, 0), (0, diff)), mode="constant")
+            # slice = np.pad(slice, ((0, 0), (0, diff)), mode="constant")
+            slice = np.pad(slice, ((0, 0), (diff // 2, diff // 2)), mode="constant")
             slices[i_slice] = slice
 
     side_fig = plot_slice_as_plotly(
