@@ -743,6 +743,15 @@ def ai_hormone_prediction(
         dbc.Row(hormone_sliders_card),
     ]
 
+    substructure_legend_row = dbc.Row(
+        [
+            html.Img(
+                src="assets/substructure_legend.png",
+                style={"width": "100%", "height": "auto"},
+            ),
+        ]
+    )
+
     contents_container = dbc.Container(
         [
             *banner,
@@ -775,6 +784,7 @@ def ai_hormone_prediction(
                     "marginTop": "50px",
                 },
             ),
+            substructure_legend_row,
             html.Div(style={"height": space_between_sections}),
             html.Hr(),
             acknowledgements_title,
