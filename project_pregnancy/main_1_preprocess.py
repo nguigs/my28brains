@@ -126,108 +126,108 @@ if __name__ == "__main__":
                     structure_id=structure_id,
                     hippocampus_centers=hippocampus_centers,
                 )
-
-    # c. Remove degenerate faces using area thresholds
-    for hemisphere, structure_id, area_threshold in itertools.product(
-        default_config.hemispheres,
-        default_config.structure_ids,
-        default_config.area_thresholds,
-    ):
-        geodesics.remove_degenerate_faces_and_write(
-            input_dir=centered_dir,
-            output_dir=nondegenerate_dir,
-            hemisphere=hemisphere,
-            structure_id=structure_id,
-            area_threshold=area_threshold,
-        )
-
-    # d. Reparameterize meshes: use parameterization of the first mesh
-    for hemisphere, structure_id, area_threshold in itertools.product(
-        default_config.hemispheres,
-        default_config.structure_ids,
-        default_config.area_thresholds,
-    ):
-        string_base = os.path.join(
-            nondegenerate_dir,
-            f"{hemisphere}_structure_{structure_id}**_at_{area_threshold}.ply",
-        )
-        input_paths = sorted(glob.glob(string_base))
-        print(
-            f"\nd. (Reparameterize) Found {len(input_paths)} .plys for ({hemisphere}, {structure_id}) in {nondegenerate_dir}"
-        )
-        output_dir = reparameterized_dir
-
-        multiprocessing.set_start_method("spawn", force=True)
-        queue = multiprocessing.Manager().Queue()
-        for gpu_id in range(default_config.n_gpus):
-            queue.put(gpu_id)
-
-        pool = multiprocessing.Pool(processes=default_config.n_gpus)
-        i_paths = list(range(day_range_index[0], day_range_index[1] + 1))
-        print("i_paths: ", i_paths)
-
-        func = geodesics.reparameterize_with_geodesic
-        func_args_queue = [
-            (func, input_paths, output_dir, i_path, default_config.project_dir, queue)
-            for i_path in i_paths
-        ]
-
-        for _ in pool.imap_unordered(run_func_in_parallel_with_queue, func_args_queue):
-            pass
-        pool.close()
-        pool.join()
-
-    if not default_config.sort:
-        print("\ne. Skipping sorting. Preprocessing done!")
-        exit()
-
-    # e. Sort meshes by hormone levels
-    for hemisphere, structure_id, area_threshold in itertools.product(
-        default_config.hemispheres,
-        default_config.structure_ids,
-        default_config.area_thresholds,
-    ):
-        sorting.sort_meshes_by_hormones_and_write(
-            input_dir=reparameterized_dir,
-            output_dir=sorted_dir,
-            hemisphere=hemisphere,
-            structure_id=structure_id,
-            area_threshold=area_threshold,
-        )
-
-    if not default_config.run_interpolate:
-        print("\nf. Skipping interpolation. Preprocessing done!")
-        exit()
-    # f. (Optional) Geodesic interpolation between t and t+1
-    for hemisphere, structure_id, area_threshold in itertools.product(
-        default_config.hemispheres,
-        default_config.structure_ids,
-        default_config.area_thresholds,
-    ):
-        string_base = os.path.join(
-            nondegenerate_dir,
-            f"{hemisphere}_structure_{structure_id}**_at_{area_threshold}.ply",
-        )
-        input_paths = sorted(glob.glob(string_base))
-        print(
-            f"\nF. Found {len(input_paths)} .plys for {hemisphere} hemisphere, id {structure_id}"
-        )
-        output_dir = interpolated_dir
-
-        multiprocessing.set_start_method("spawn", force=True)
-        queue = multiprocessing.Manager().Queue()
-        for gpu_id in range(default_config.n_gpus):
-            queue.put(gpu_id)
-
-        pool = multiprocessing.Pool(processes=default_config.n_gpus)
-        i_pairs = list(range(day_range_index[0], day_range_index[1]))
-
-        func = geodesics.interpolate_with_geodesic
-        func_args_queue = [
-            (func, input_paths, output_dir, i_pair, queue) for i_pair in i_pairs
-        ]
-
-        for _ in pool.imap_unordered(run_func_in_parallel_with_queue, func_args_queue):
-            pass
-        pool.close()
-        pool.join()
+    #
+    # # c. Remove degenerate faces using area thresholds
+    # for hemisphere, structure_id, area_threshold in itertools.product(
+    #     default_config.hemispheres,
+    #     default_config.structure_ids,
+    #     default_config.area_thresholds,
+    # ):
+    #     geodesics.remove_degenerate_faces_and_write(
+    #         input_dir=centered_dir,
+    #         output_dir=nondegenerate_dir,
+    #         hemisphere=hemisphere,
+    #         structure_id=structure_id,
+    #         area_threshold=area_threshold,
+    #     )
+    #
+    # # d. Reparameterize meshes: use parameterization of the first mesh
+    # for hemisphere, structure_id, area_threshold in itertools.product(
+    #     default_config.hemispheres,
+    #     default_config.structure_ids,
+    #     default_config.area_thresholds,
+    # ):
+    #     string_base = os.path.join(
+    #         nondegenerate_dir,
+    #         f"{hemisphere}_structure_{structure_id}**_at_{area_threshold}.ply",
+    #     )
+    #     input_paths = sorted(glob.glob(string_base))
+    #     print(
+    #         f"\nd. (Reparameterize) Found {len(input_paths)} .plys for ({hemisphere}, {structure_id}) in {nondegenerate_dir}"
+    #     )
+    #     output_dir = reparameterized_dir
+    #
+    #     multiprocessing.set_start_method("spawn", force=True)
+    #     queue = multiprocessing.Manager().Queue()
+    #     for gpu_id in range(default_config.n_gpus):
+    #         queue.put(gpu_id)
+    #
+    #     pool = multiprocessing.Pool(processes=default_config.n_gpus)
+    #     i_paths = list(range(day_range_index[0], day_range_index[1] + 1))
+    #     print("i_paths: ", i_paths)
+    #
+    #     func = geodesics.reparameterize_with_geodesic
+    #     func_args_queue = [
+    #         (func, input_paths, output_dir, i_path, default_config.project_dir, queue)
+    #         for i_path in i_paths
+    #     ]
+    #
+    #     for _ in pool.imap_unordered(run_func_in_parallel_with_queue, func_args_queue):
+    #         pass
+    #     pool.close()
+    #     pool.join()
+    #
+    # if not default_config.sort:
+    #     print("\ne. Skipping sorting. Preprocessing done!")
+    #     exit()
+    #
+    # # e. Sort meshes by hormone levels
+    # for hemisphere, structure_id, area_threshold in itertools.product(
+    #     default_config.hemispheres,
+    #     default_config.structure_ids,
+    #     default_config.area_thresholds,
+    # ):
+    #     sorting.sort_meshes_by_hormones_and_write(
+    #         input_dir=reparameterized_dir,
+    #         output_dir=sorted_dir,
+    #         hemisphere=hemisphere,
+    #         structure_id=structure_id,
+    #         area_threshold=area_threshold,
+    #     )
+    #
+    # if not default_config.run_interpolate:
+    #     print("\nf. Skipping interpolation. Preprocessing done!")
+    #     exit()
+    # # f. (Optional) Geodesic interpolation between t and t+1
+    # for hemisphere, structure_id, area_threshold in itertools.product(
+    #     default_config.hemispheres,
+    #     default_config.structure_ids,
+    #     default_config.area_thresholds,
+    # ):
+    #     string_base = os.path.join(
+    #         nondegenerate_dir,
+    #         f"{hemisphere}_structure_{structure_id}**_at_{area_threshold}.ply",
+    #     )
+    #     input_paths = sorted(glob.glob(string_base))
+    #     print(
+    #         f"\nF. Found {len(input_paths)} .plys for {hemisphere} hemisphere, id {structure_id}"
+    #     )
+    #     output_dir = interpolated_dir
+    #
+    #     multiprocessing.set_start_method("spawn", force=True)
+    #     queue = multiprocessing.Manager().Queue()
+    #     for gpu_id in range(default_config.n_gpus):
+    #         queue.put(gpu_id)
+    #
+    #     pool = multiprocessing.Pool(processes=default_config.n_gpus)
+    #     i_pairs = list(range(day_range_index[0], day_range_index[1]))
+    #
+    #     func = geodesics.interpolate_with_geodesic
+    #     func_args_queue = [
+    #         (func, input_paths, output_dir, i_pair, queue) for i_pair in i_pairs
+    #     ]
+    #
+    #     for _ in pool.imap_unordered(run_func_in_parallel_with_queue, func_args_queue):
+    #         pass
+    #     pool.close()
+    #     pool.join()

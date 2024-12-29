@@ -80,7 +80,7 @@ stepsize = {
 run_type = "base"  # can either be "base" for base result or "exp" for testing.
 
 # Brain hemispheres and anatomical structures
-hemispheres = ["left"]  # , "right"]
+hemispheres = ["right"]
 structure_ids = [-1]
 
 # Face area threshold for non-degenerate meshes:
@@ -144,7 +144,7 @@ data_dir = os.path.join(project_dir, "data")
 synthetic_data_dir = os.path.join(data_dir, "synthetic_mesh")
 
 # Results (inside project_dir : my28brains/project_regression/)
-results_dir = os.path.join(project_dir, "results")
+results_dir = os.path.join("/home/data/pregnancy", "meshes_nicolas")
 tmp_dir = os.path.join(results_dir, "tmp")
 
 preprocess_dir = os.path.join(results_dir, "1_preprocess")
