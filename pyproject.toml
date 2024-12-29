@@ -40,7 +40,6 @@ statsmodels = "^0.14.1"
 islp = "^0.3.22"
 dash-bootstrap-components = "^1.5.0"
 neuraloperator = {git = "https://github.com/neuraloperator/neuraloperator.git"}
-torch-harmonics = "^0.6.5"
 
 [tool.flake8]
 application_import_names = "my28brains"

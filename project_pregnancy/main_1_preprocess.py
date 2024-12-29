@@ -1,4 +1,4 @@
-"""Preprocessing of the my28brains dataset.
+"""Preprocessing of the my28brains datamset.
 
 The processing is done:
 - with the `src.preprocessing` module.
