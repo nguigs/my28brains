@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-geomstats = { git = "https://github.com/geomstats/geomstats.git" }
+geomstats = "*"
 joblib = "*"
 matplotlib = "*"
 nibabel = "*"
@@ -32,7 +32,7 @@ flake8 = "*"
 flake8-docstrings = "*"
 Flake8-pyproject = "*"
 isort = "*"
-pyvista = "^0.43.3"
+pyvista = "*"
 dash = "^2.15.0"
 addict = "*"
 tqdm = "^4.66.2"
