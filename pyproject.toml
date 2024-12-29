@@ -2,7 +2,10 @@
 name = "my28brains"
 version = "0.1.0"
 description = "Brain Shape Analysis through the Menstrual Cycle"
-authors = ["Adele Myers <adele@ucsb.edu>"]
+authors = [
+    { name = "Geometric Intelligence Lab" },
+    { name = "Adele Myers", email = "adele@ucsb.edu" },
+]
 readme = "README.md"
 requires-python= "3.11"
 
